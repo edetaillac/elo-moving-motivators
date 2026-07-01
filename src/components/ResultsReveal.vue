@@ -3,8 +3,17 @@ import { computed, ref, watch } from 'vue';
 import { Motivator } from '@/store';
 import MotivatorCard from './MotivatorCard.vue';
 
-defineProps<{ items: Motivator[]; name?: string }>();
+const props = defineProps<{ items: Motivator[]; name?: string }>();
 defineEmits<{ (e: 'close'): void }>();
+
+// Relative "strength" bar per card: shows the gaps between motivations at a
+// glance (a runaway #1 vs a tightly-packed top) instead of a raw ELO number.
+const eloMin = computed(() => Math.min(...props.items.map((i) => i.elo)));
+const eloMax = computed(() => Math.max(...props.items.map((i) => i.elo)));
+const barWidth = (elo: number): number => {
+  if (eloMax.value === eloMin.value) return 100;
+  return Math.round(14 + ((elo - eloMin.value) / (eloMax.value - eloMin.value)) * 86);
+};
 
 const TOTAL = 10;
 // Displayed left to right as 4th...10th; revealed right to left (10th first).
@@ -78,9 +87,11 @@ const revealNext = () => {
       <div class="podium">
         <div class="podium-slot" style="animation-delay: 0s">
           <div class="mini-card-wrap">
-            <div class="mini-card-content">
+            <div class="mini-card-content" :class="{ revealed: rank2Revealed }">
               <MotivatorCard :item="items[1]" />
-              <div class="mini-card-elo">{{ Math.round(items[1].elo) }}</div>
+              <div class="mini-card-bar">
+                <div class="mini-card-bar-fill" :style="{ width: barWidth(items[1].elo) + '%', backgroundColor: items[1].color }" />
+              </div>
               <Transition name="mask-fade">
                 <div v-if="!rank2Revealed" class="reveal-mask">?</div>
               </Transition>
@@ -92,9 +103,11 @@ const revealNext = () => {
         <div class="podium-slot" style="animation-delay: 0.07s">
           <span v-if="rank1Revealed" class="podium-crown">👑</span>
           <div class="mini-card-wrap">
-            <div class="mini-card-content">
+            <div class="mini-card-content" :class="{ revealed: rank1Revealed }">
               <MotivatorCard :item="items[0]" />
-              <div class="mini-card-elo">{{ Math.round(items[0].elo) }}</div>
+              <div class="mini-card-bar">
+                <div class="mini-card-bar-fill" :style="{ width: barWidth(items[0].elo) + '%', backgroundColor: items[0].color }" />
+              </div>
               <Transition name="mask-fade">
                 <div v-if="!rank1Revealed" class="reveal-mask">?</div>
               </Transition>
@@ -105,9 +118,11 @@ const revealNext = () => {
 
         <div class="podium-slot" style="animation-delay: 0.14s">
           <div class="mini-card-wrap">
-            <div class="mini-card-content">
+            <div class="mini-card-content" :class="{ revealed: rank3Revealed }">
               <MotivatorCard :item="items[2]" />
-              <div class="mini-card-elo">{{ Math.round(items[2].elo) }}</div>
+              <div class="mini-card-bar">
+                <div class="mini-card-bar-fill" :style="{ width: barWidth(items[2].elo) + '%', backgroundColor: items[2].color }" />
+              </div>
               <Transition name="mask-fade">
                 <div v-if="!rank3Revealed" class="reveal-mask">?</div>
               </Transition>
@@ -128,9 +143,11 @@ const revealNext = () => {
       >
         <div class="mini-card-wrap">
           <div class="frieze-rank-header">{{ rank }}</div>
-          <div class="mini-card-content">
+          <div class="mini-card-content" :class="{ revealed: isRevealed(rank) }">
             <MotivatorCard :item="items[rank - 1]" />
-            <div class="mini-card-elo">{{ Math.round(items[rank - 1].elo) }}</div>
+            <div class="mini-card-bar">
+              <div class="mini-card-bar-fill" :style="{ width: barWidth(items[rank - 1].elo) + '%', backgroundColor: items[rank - 1].color }" />
+            </div>
             <Transition name="mask-fade">
               <div v-if="!isRevealed(rank)" class="reveal-mask">?</div>
             </Transition>
@@ -240,6 +257,15 @@ const revealNext = () => {
   flex: 1;
   min-height: 0;
   cursor: default;
+  transform: scale(0.9);
+  opacity: 0.5;
+  transition: transform 0.4s cubic-bezier(0.34, 1.5, 0.64, 1), opacity 0.3s ease;
+}
+
+/* When a card is unmasked, it pops in as the "?" fades out. */
+.mini-card-content.revealed :deep(.card) {
+  transform: scale(1);
+  opacity: 1;
 }
 
 /* Reveal cards are narrow: shrink the banner so long names never clip,
@@ -276,13 +302,19 @@ const revealNext = () => {
   height: 320px;
 }
 
-.mini-card-elo {
+.mini-card-bar {
   flex-shrink: 0;
-  margin-top: 6px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #667085;
+  margin-top: 8px;
+  height: 6px;
+  border-radius: 999px;
+  background: #eef0f6;
+  overflow: hidden;
+}
+
+.mini-card-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
 .reveal-mask {
@@ -479,8 +511,9 @@ const revealNext = () => {
     display: none;
   }
 
-  .mini-card-elo {
-    font-size: 11px;
+  .mini-card-bar {
+    margin-top: 6px;
+    height: 5px;
   }
 }
 </style>
