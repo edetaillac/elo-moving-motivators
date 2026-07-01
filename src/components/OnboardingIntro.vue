@@ -215,4 +215,19 @@ const deck = DECK_IDS.map((id, i) => {
   box-shadow: 0 4px 0 #a9adbd;
   cursor: not-allowed;
 }
+
+/* Mobile only — desktop layout above is untouched. */
+@media (max-width: 480px) {
+  .onboarding {
+    padding: 32px 20px;
+  }
+
+  .onboarding-form {
+    flex-direction: column;
+  }
+
+  .onboarding-cta {
+    width: 100%;
+  }
+}
 </style>

@@ -202,4 +202,25 @@ const reset = () => {
   border-color: #6366f1;
   color: #6366f1;
 }
+
+/* Mobile only — desktop layout above is untouched. */
+@media (max-width: 480px) {
+  .reveal-view {
+    padding: 24px 16px;
+  }
+
+  .uploader {
+    padding: 32px 20px;
+  }
+
+  .uploader-actions {
+    flex-direction: column;
+  }
+
+  .uploader-primary,
+  .uploader-file {
+    width: 100%;
+    text-align: center;
+  }
+}
 </style>

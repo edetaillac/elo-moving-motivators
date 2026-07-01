@@ -168,4 +168,20 @@ const downloadCode = () => {
   font-size: 12px;
   color: #98a2b3;
 }
+
+/* Mobile only — desktop layout above is untouched. */
+@media (max-width: 480px) {
+  .export {
+    padding: 28px 20px;
+  }
+
+  .export-actions {
+    flex-direction: column;
+  }
+
+  .export-primary,
+  .export-secondary {
+    width: 100%;
+  }
+}
 </style>

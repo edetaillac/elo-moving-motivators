@@ -410,4 +410,57 @@ const revealNext = () => {
   opacity: 0;
   transform: scale(0.96);
 }
+
+/* Mobile only — desktop layout above is untouched.
+   Podium (3 fixed 190px slots) would overflow a phone, so slots flex to share
+   the row and cards become compact (icon + name + elo, no description). */
+@media (max-width: 640px) {
+  .podium {
+    gap: 8px;
+    min-height: 0;
+    padding-top: 24px;
+  }
+
+  .podium-slot {
+    width: auto;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .podium-crown {
+    font-size: 20px;
+  }
+
+  .frieze {
+    gap: 8px;
+    margin-top: 28px;
+  }
+
+  .frieze-slot {
+    width: 30%;
+    min-width: 90px;
+  }
+
+  .frieze-rank-header {
+    font-size: 12px;
+  }
+
+  .frieze-slot .mini-card-wrap,
+  .podium-slot .mini-card-wrap {
+    height: 176px;
+  }
+
+  .mini-card-content :deep(.card-banner) {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+
+  .mini-card-content :deep(.card-description) {
+    display: none;
+  }
+
+  .mini-card-elo {
+    font-size: 11px;
+  }
+}
 </style>
