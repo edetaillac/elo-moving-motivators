@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { MOTIVATORS } from '@/store';
+import { t, locale, setLocale } from '@/i18n';
 
 const emit = defineEmits<{ (e: 'start', name: string): void }>();
 
 const name = ref('');
 const canStart = computed(() => name.value.trim().length > 0);
+
+// Split the estimate sentence around {b} to wrap the "40-60 duels" part in <strong>.
+const estimateParts = computed(() => t('onboarding.estimate').split('{b}'));
 
 const start = () => {
   if (!canStart.value) return;
@@ -32,6 +36,25 @@ const deck = DECK_IDS.map((id, i) => {
 
 <template>
   <div class="onboarding">
+    <div class="lang-switch">
+      <button
+        type="button"
+        class="lang-flag"
+        :class="{ active: locale === 'fr' }"
+        :aria-pressed="locale === 'fr'"
+        aria-label="Français"
+        @click="setLocale('fr')"
+      >🇫🇷</button>
+      <button
+        type="button"
+        class="lang-flag"
+        :class="{ active: locale === 'en' }"
+        :aria-pressed="locale === 'en'"
+        aria-label="English"
+        @click="setLocale('en')"
+      >🇬🇧</button>
+    </div>
+
     <div class="deck" aria-hidden="true">
       <div
         v-for="card in deck"
@@ -46,13 +69,10 @@ const deck = DECK_IDS.map((id, i) => {
       </div>
     </div>
 
-    <p class="onboarding-lead">
-      Deux motivateurs s'affrontent, tu choisis celui qui te parle le plus.
-      Au fil des duels, ton classement personnel se précise.
-    </p>
+    <p class="onboarding-lead">{{ t('onboarding.lead') }}</p>
 
     <p class="onboarding-estimate">
-      ⏱️ Compte <strong>40 à 60 duels</strong> pour débloquer ton classement complet.
+      ⏱️ {{ estimateParts[0] }}<strong>{{ t('onboarding.estimateBold') }}</strong>{{ estimateParts[1] }}
     </p>
 
     <div class="onboarding-form">
@@ -60,12 +80,12 @@ const deck = DECK_IDS.map((id, i) => {
         v-model="name"
         class="onboarding-input"
         type="text"
-        placeholder="Ton prénom"
+        :placeholder="t('onboarding.namePlaceholder')"
         maxlength="30"
         @keyup.enter="start"
       >
       <button class="onboarding-cta" type="button" :disabled="!canStart" @click="start">
-        C'est parti ! 🚀
+        {{ t('onboarding.cta') }}
       </button>
     </div>
   </div>
@@ -73,6 +93,7 @@ const deck = DECK_IDS.map((id, i) => {
 
 <style scoped>
 .onboarding {
+  position: relative;
   max-width: 560px;
   margin: 0 auto;
   background: #ffffff;
@@ -80,6 +101,37 @@ const deck = DECK_IDS.map((id, i) => {
   border-radius: 16px;
   padding: 40px 32px;
   text-align: center;
+}
+
+.lang-switch {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+}
+
+.lang-flag {
+  border: none;
+  background: none;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.4;
+  filter: grayscale(0.6);
+  transition: opacity 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
+}
+
+.lang-flag:hover {
+  opacity: 0.8;
+}
+
+.lang-flag.active {
+  opacity: 1;
+  filter: none;
+  background: #eef0f6;
 }
 
 /* Fanned deck of motivator cards, dealt in then gently floating. */

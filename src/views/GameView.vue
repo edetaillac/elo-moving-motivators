@@ -8,6 +8,7 @@ import OnboardingIntro from '@/components/OnboardingIntro.vue';
 import UnlockCelebration from '@/components/UnlockCelebration.vue';
 import ExportResults from '@/components/ExportResults.vue';
 import ResultsReveal from '@/components/ResultsReveal.vue';
+import { t, mName } from '@/i18n';
 
 // Manager mode is opted into via ?mode=manager on the link the manager shares.
 // Default (no param) = solo: the player reveals their own ranking.
@@ -68,7 +69,7 @@ const selectedItems = ref<Motivator[]>(pickTwoDistinctItems());
 // Firing chooseFavorite again before it settles can leave the transition's
 // enter classes stuck, making the cards invisible.
 const isAnimating = ref(false);
-const matchHistory = ref<{ winner: string; loser: string }[]>([]);
+const matchHistory = ref<{ winner: Motivator; loser: Motivator }[]>([]);
 const matchCount = ref(0);
 const showHistory = ref(false);
 
@@ -117,7 +118,7 @@ const chooseFavorite = (winner: Motivator, loser: Motivator) => {
   loser.elo = newLoserElo;
 
   // Update match history and count
-  matchHistory.value.unshift({ winner: winner.name, loser: loser.name });
+  matchHistory.value.unshift({ winner, loser });
   matchCount.value++;
 
   // Increment shown count for both winner and loser
@@ -179,20 +180,20 @@ const onCelebrationAction = () => {
   <div class="page">
     <header class="page-header">
       <h1>Moving Motivators</h1>
-      <p v-if="showOnboarding">Découvre ce qui te motive vraiment parmi 10 leviers de motivation.</p>
-      <p v-else>Choisis la carte qui te motive le plus à chaque duel.</p>
+      <p v-if="showOnboarding">{{ t('header.subtitle.onboarding') }}</p>
+      <p v-else>{{ t('header.subtitle.duel') }}</p>
 
       <div v-if="!showOnboarding && !showExport && !showReveal" class="header-progress">
         <button v-if="rankingUnlocked" class="reveal-trigger" type="button" @click="openResult">
-          {{ isManager ? 'Récupérer mon code 🎁' : 'Voir mon classement ✨' }}
+          {{ isManager ? t('header.getCode') : t('header.seeRanking') }}
         </button>
         <!-- Single merged indicator: duels played + progress toward unlocking the ranking. -->
-        <div v-else class="progress-pill" :title="`Continue à jouer : ton classement se débloque (${reliabilityPercent} %)`">
-          <span class="progress-pill-count">⚔️ {{ matchCount }} duel{{ matchCount === 1 ? '' : 's' }}</span>
+        <div v-else class="progress-pill">
+          <span class="progress-pill-count">⚔️ {{ t('header.duels', { n: matchCount, s: matchCount === 1 ? '' : 's' }) }}</span>
           <div class="progress-pill-track">
             <div class="progress-pill-fill" :style="{ width: reliabilityPercent + '%' }" />
           </div>
-          <span class="progress-pill-goal">🔒 progression {{ reliabilityPercent }}%</span>
+          <span class="progress-pill-goal">{{ t('header.progress', { p: reliabilityPercent }) }}</span>
         </div>
       </div>
     </header>
@@ -230,19 +231,19 @@ const onCelebrationAction = () => {
               />
             </div>
           </Transition>
-          <p class="hint">Clique une carte, ou utilise les flèches ← →</p>
+          <p class="hint">{{ t('arena.hint') }}</p>
         </main>
       </Transition>
     </div>
 
     <footer v-if="!showOnboarding && !showExport && !showReveal" class="page-footer">
       <button class="history-toggle" type="button" @click="showHistory = !showHistory">
-        Historique {{ showHistory ? '▾' : '▸' }}
+        {{ t('footer.history') }} {{ showHistory ? '▾' : '▸' }}
       </button>
       <ul v-if="showHistory" class="history-list">
         <li v-for="(match, index) in matchHistory" :key="index" class="history-row">
-          <span class="history-winner">🏆 {{ match.winner }}</span>
-          <span class="history-loser">{{ match.loser }}</span>
+          <span class="history-winner">🏆 {{ mName(match.winner) }}</span>
+          <span class="history-loser">{{ mName(match.loser) }}</span>
         </li>
       </ul>
     </footer>

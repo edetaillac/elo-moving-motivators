@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { Motivator } from '@/store';
 import { encodeResults } from '@/results';
+import { t } from '@/i18n';
 
 const props = defineProps<{ name: string; items: Motivator[] }>();
 defineEmits<{ (e: 'close'): void }>();
@@ -36,11 +37,8 @@ const downloadCode = () => {
 <template>
   <div class="export">
     <div class="export-emoji">🎁</div>
-    <h2>{{ name ? `C'est prêt, ${name} !` : "C'est prêt !" }}</h2>
-    <p class="export-lead">
-      Ton classement est établi, mais gardé secret. Envoie ce code à ton manager :
-      il le chargera sur la page de révélation pour le découvrir avec toi.
-    </p>
+    <h2>{{ name ? t('export.title', { name }) : t('export.titleNoName') }}</h2>
+    <p class="export-lead">{{ t('export.lead') }}</p>
 
     <textarea
       class="export-code"
@@ -53,16 +51,14 @@ const downloadCode = () => {
 
     <div class="export-actions">
       <button class="export-primary" type="button" @click="copyCode">
-        {{ copied ? 'Copié ✅' : 'Copier le code' }}
+        {{ copied ? t('export.copied') : t('export.copy') }}
       </button>
       <button class="export-secondary" type="button" @click="downloadCode">
-        Télécharger (.txt)
+        {{ t('export.download') }}
       </button>
     </div>
 
-    <p class="export-hint">
-      Pas de spoiler : ce code est illisible tel quel, ton classement reste une surprise.
-    </p>
+    <p class="export-hint">{{ t('export.hint') }}</p>
   </div>
 </template>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Motivator } from '@/store';
+import { mName, mDesc } from '@/i18n';
 
 const props = defineProps<{ item: Motivator }>();
 defineEmits<{ (e: 'choose'): void }>();
@@ -23,12 +24,12 @@ const isLightColor = computed(() => {
       class="card-banner"
       :class="{ 'card-banner--dark-text': isLightColor }"
       :style="{ backgroundColor: item.color }"
-    >{{ item.name }}</div>
+    >{{ mName(item) }}</div>
     <div class="card-body">
       <div class="card-image">
-        <img :src="require(`@/assets/icons/${item.srcImg}`)" :alt="item.name">
+        <img :src="require(`@/assets/icons/${item.srcImg}`)" :alt="mName(item)">
       </div>
-      <p class="card-description">{{ item.description }}</p>
+      <p class="card-description">{{ mDesc(item) }}</p>
     </div>
   </button>
 </template>

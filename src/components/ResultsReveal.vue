@@ -2,9 +2,14 @@
 import { computed, ref } from 'vue';
 import { Motivator } from '@/store';
 import MotivatorCard from './MotivatorCard.vue';
+import { t, placeLabel } from '@/i18n';
 
 const props = defineProps<{ items: Motivator[]; name?: string }>();
 defineEmits<{ (e: 'close'): void }>();
+
+// Title with the name highlighted; split around {name} so word order works in
+// both "Le classement de X" (fr) and "X's ranking" (en).
+const titleParts = computed(() => t('reveal.title').split('{name}'));
 
 // Relative "strength" bar per card: shows the gaps between motivations at a
 // glance (a runaway #1 vs a tightly-packed top) instead of a raw ELO number.
@@ -24,9 +29,7 @@ const revealedCount = ref(0);
 const nextRank = computed(() => TOTAL - revealedCount.value);
 const allRevealed = computed(() => revealedCount.value >= TOTAL);
 
-const nextRankLabel = computed(() =>
-  nextRank.value === 1 ? '1re place' : `${nextRank.value}e place`
-);
+const nextRankLabel = computed(() => placeLabel(nextRank.value));
 
 const isRevealed = (rank: number) => rank >= TOTAL + 1 - revealedCount.value;
 
@@ -44,9 +47,9 @@ const revealNext = () => {
 <template>
   <div class="reveal-page">
     <header class="reveal-header">
-      <h2 v-if="name">Le classement de <span class="reveal-name">{{ name }}</span></h2>
-      <h2 v-else>Révélation du classement</h2>
-      <button class="reveal-close" type="button" @click="$emit('close')">Fermer</button>
+      <h2 v-if="name">{{ titleParts[0] }}<span class="reveal-name">{{ name }}</span>{{ titleParts[1] }}</h2>
+      <h2 v-else>{{ t('reveal.titleNoName') }}</h2>
+      <button class="reveal-close" type="button" @click="$emit('close')">{{ t('reveal.close') }}</button>
     </header>
 
     <!-- Podium on top: 2nd, 1st, 3rd. Revealed last (from the bottom up). -->
@@ -125,9 +128,9 @@ const revealNext = () => {
     </ol>
 
     <button v-if="!allRevealed" class="reveal-next" type="button" @click="revealNext">
-      Révéler la {{ nextRankLabel }}
+      {{ t('reveal.next', { label: nextRankLabel }) }}
     </button>
-    <p v-else class="reveal-done">Classement complet ✨</p>
+    <p v-else class="reveal-done">{{ t('reveal.done') }}</p>
   </div>
 </template>
 

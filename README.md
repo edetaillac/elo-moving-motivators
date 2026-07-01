@@ -1,30 +1,34 @@
 # Moving Motivators
 
-Un petit jeu pour classer ses **Moving Motivators** (Management 3.0) par une série de duels, plutôt qu'un tri manuel fastidieux. À chaque duel, deux motivateurs s'affrontent, tu choisis celui qui te parle le plus, et un score façon ELO (comme aux échecs) en déduit ton classement des 10 motivateurs.
+A small game to rank your **Moving Motivators** (Management 3.0) through a series of duels, instead of a tedious manual sort. In each duel, two motivators face off, you pick the one that speaks to you most, and an ELO score (like in chess) derives your ranking of the 10 motivators.
 
-## Comment ça marche
+## How it works
 
-- **Duels** : clique sur une carte (ou flèches ← →) pour désigner le motivateur qui te motive le plus.
-- **Fiabilisation** : le classement se débloque quand les résultats sont assez stables — chaque motivateur doit avoir été comparé plusieurs fois (exposition) et le trio de tête doit s'être stabilisé. Compter ~40 à 60 duels.
-- **Révélation animée** : une fois débloqué, le classement se dévoile de la 10e place vers la 1re, avec un podium.
+- **Duels**: click a card (or use the ← → arrows) to pick the motivator that drives you more.
+- **Unlocking**: the ranking unlocks once the results are stable enough — each motivator must have been compared several times (exposure) and the top trio must have settled. Expect ~40 to 60 duels.
+- **Animated reveal**: once unlocked, the ranking is revealed from 10th place up to 1st, with a podium.
 
-## Deux modes
+## Two modes
 
-- **Solo** (par défaut, `/`) : tu joues et tu découvres toi-même ton classement à la fin.
-- **Manager** (`/?mode=manager`) : à la fin, tu n'obtiens pas ton classement mais un **code opaque** (base64, illisible tel quel, pas de spoiler) à envoyer à ton manager.
-- **Page de révélation** (`/reveal`) : le manager colle le code (ou dépose le fichier) et lance la révélation animée pour la découvrir ensemble.
+- **Solo** (default, `/`): you play and reveal your own ranking at the end.
+- **Manager** (`/?mode=manager`): at the end you don't get your ranking but an **opaque code** (base64, unreadable as-is, no spoiler) to send to your manager.
+- **Reveal page** (`/reveal`): the manager pastes the code (or drops the file) and runs the animated reveal to discover it together.
 
-Le mode se choisit via l'URL partagée : pas de paramètre = solo, `?mode=manager` = export.
+The mode is chosen via the shared URL: no parameter = solo, `?mode=manager` = export.
+
+## Language
+
+French by default, with an English version. A toggle in the header switches between FR and EN (the choice is remembered).
 
 ## Stack
 
-Vue 3 (`<script setup>`) + TypeScript + Vue Router, build via Vue CLI (webpack). Pas de backend : le partage manager passe par un code encodé côté client.
+Vue 3 (`<script setup>`) + TypeScript + Vue Router, built with Vue CLI (webpack). No backend: the manager sharing goes through a client-side encoded code.
 
-## Développement
+## Development
 
 ```
-npm install       # ou : make install (via docker)
-npm run serve     # ou : make serve   — dev + hot-reload sur http://localhost:8080
-npm run build     # ou : make build   — build de production
-npm run lint      # ou : make lint
+npm install       # or: make install (via docker)
+npm run serve     # or: make serve   — dev + hot-reload at http://localhost:8080
+npm run build     # or: make build   — production build
+npm run lint      # or: make lint
 ```

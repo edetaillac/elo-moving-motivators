@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { t } from '@/i18n';
+
 defineProps<{ name?: string; manager?: boolean }>();
 defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
 </script>
@@ -8,21 +10,14 @@ defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
 
     <div class="celebration-card">
       <div class="celebration-emoji">🎉</div>
-      <h2>{{ name ? `Bravo ${name} !` : 'Bravo !' }}</h2>
-      <p v-if="manager">
-        Tu as joué assez de duels pour établir ton classement des 10 motivateurs.
-        Récupère ton code et envoie-le à ton manager pour le révéler ensemble.
-      </p>
-      <p v-else>
-        Tu as joué assez de duels pour établir ton classement des 10 motivateurs.
-        Prêt à découvrir tes résultats ?
-      </p>
+      <h2>{{ name ? t('celebration.title', { name }) : t('celebration.titleNoName') }}</h2>
+      <p>{{ manager ? t('celebration.textManager') : t('celebration.textSolo') }}</p>
       <div class="celebration-actions">
         <button class="celebration-primary" type="button" @click="$emit('action')">
-          {{ manager ? 'Récupérer mon code 🎁' : 'Découvrir le classement ✨' }}
+          {{ manager ? t('celebration.primaryManager') : t('celebration.primarySolo') }}
         </button>
         <button class="celebration-secondary" type="button" @click="$emit('close')">
-          Continuer à jouer
+          {{ t('celebration.secondary') }}
         </button>
       </div>
     </div>

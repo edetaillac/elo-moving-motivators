@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Motivator } from '@/store';
 import { decodeResults } from '@/results';
 import ResultsReveal from '@/components/ResultsReveal.vue';
+import { t, locale, setLocale } from '@/i18n';
 
 const codeInput = ref('');
 const error = ref('');
@@ -12,7 +13,7 @@ const revealItems = ref<Motivator[] | null>(null);
 const loadCode = () => {
   const decoded = decodeResults(codeInput.value);
   if (!decoded) {
-    error.value = 'Code invalide. Vérifie que tu as bien collé le code complet.';
+    error.value = t('revealPage.error');
     return;
   }
   error.value = '';
@@ -50,19 +51,35 @@ const reset = () => {
     />
 
     <div v-else class="uploader">
+      <div class="lang-switch">
+        <button
+          type="button"
+          class="lang-flag"
+          :class="{ active: locale === 'fr' }"
+          :aria-pressed="locale === 'fr'"
+          aria-label="Français"
+          @click="setLocale('fr')"
+        >🇫🇷</button>
+        <button
+          type="button"
+          class="lang-flag"
+          :class="{ active: locale === 'en' }"
+          :aria-pressed="locale === 'en'"
+          aria-label="English"
+          @click="setLocale('en')"
+        >🇬🇧</button>
+      </div>
+
       <div class="uploader-emoji">🎬</div>
-      <h1>Révélation du classement</h1>
-      <p class="uploader-lead">
-        Colle le code envoyé par la personne, ou dépose son fichier,
-        puis lance la révélation animée.
-      </p>
+      <h1>{{ t('revealPage.title') }}</h1>
+      <p class="uploader-lead">{{ t('revealPage.lead') }}</p>
 
       <textarea
         v-model="codeInput"
         class="uploader-code"
         rows="4"
         spellcheck="false"
-        placeholder="Colle le code ici…"
+        :placeholder="t('revealPage.placeholder')"
         @input="error = ''"
       />
 
@@ -70,10 +87,10 @@ const reset = () => {
 
       <div class="uploader-actions">
         <button class="uploader-primary" type="button" :disabled="!codeInput.trim()" @click="loadCode">
-          Lancer la révélation ✨
+          {{ t('revealPage.start') }}
         </button>
         <label class="uploader-file">
-          Importer un fichier
+          {{ t('revealPage.import') }}
           <input type="file" accept=".txt,text/plain" hidden @change="onFile">
         </label>
       </div>
@@ -93,6 +110,7 @@ const reset = () => {
 }
 
 .uploader {
+  position: relative;
   max-width: 520px;
   margin: 0 auto;
   background: #ffffff;
@@ -100,6 +118,37 @@ const reset = () => {
   border-radius: 16px;
   padding: 40px 32px;
   text-align: center;
+}
+
+.lang-switch {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+}
+
+.lang-flag {
+  border: none;
+  background: none;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.4;
+  filter: grayscale(0.6);
+  transition: opacity 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
+}
+
+.lang-flag:hover {
+  opacity: 0.8;
+}
+
+.lang-flag.active {
+  opacity: 1;
+  filter: none;
+  background: #eef0f6;
 }
 
 .uploader-emoji {
