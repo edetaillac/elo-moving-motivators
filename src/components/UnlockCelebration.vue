@@ -1,34 +1,10 @@
 <script setup lang="ts">
 defineProps<{ name?: string; manager?: boolean }>();
 defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
-
-const CONFETTI_COLORS = ['#6366f1', '#f45bac', '#fbbf24', '#34d399', '#f97316'];
-const confettiPieces = Array.from({ length: 30 }, (_, i) => ({
-  id: i,
-  left: Math.random() * 100,
-  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-  delay: Math.random() * 0.4,
-  duration: 1.6 + Math.random() * 0.8,
-  rotate: Math.random() * 360,
-}));
 </script>
 
 <template>
   <div class="celebration-backdrop">
-    <div class="confetti">
-      <span
-        v-for="p in confettiPieces"
-        :key="p.id"
-        class="confetti-piece"
-        :style="{
-          left: p.left + '%',
-          backgroundColor: p.color,
-          animationDelay: p.delay + 's',
-          animationDuration: p.duration + 's',
-          transform: `rotate(${p.rotate}deg)`,
-        }"
-      />
-    </div>
 
     <div class="celebration-card">
       <div class="celebration-emoji">🎉</div>
@@ -63,35 +39,6 @@ const confettiPieces = Array.from({ length: 30 }, (_, i) => ({
   justify-content: center;
   background: rgba(15, 16, 26, 0.55);
   padding: 24px;
-}
-
-.confetti {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.confetti-piece {
-  position: absolute;
-  top: -12px;
-  width: 9px;
-  height: 16px;
-  border-radius: 2px;
-  animation-name: confetti-fall;
-  animation-timing-function: ease-in;
-  animation-fill-mode: forwards;
-}
-
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(70vh) rotate(360deg);
-    opacity: 0;
-  }
 }
 
 .celebration-card {

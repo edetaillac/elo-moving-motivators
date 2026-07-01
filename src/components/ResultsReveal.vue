@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { Motivator } from '@/store';
 import MotivatorCard from './MotivatorCard.vue';
 
@@ -18,18 +18,8 @@ const barWidth = (elo: number): number => {
 const TOTAL = 10;
 // Displayed left to right as 4th...10th; revealed right to left (10th first).
 const FRIEZE_RANKS = [4, 5, 6, 7, 8, 9, 10];
-const CONFETTI_COLORS = ['#6366f1', '#f45bac', '#fbbf24', '#34d399', '#f97316'];
-const confettiPieces = Array.from({ length: 26 }, (_, i) => ({
-  id: i,
-  left: Math.random() * 100,
-  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-  delay: Math.random() * 0.35,
-  duration: 1.4 + Math.random() * 0.7,
-  rotate: Math.random() * 360,
-}));
 
 const revealedCount = ref(0);
-const showConfetti = ref(false);
 
 const nextRank = computed(() => TOTAL - revealedCount.value);
 const allRevealed = computed(() => revealedCount.value >= TOTAL);
@@ -44,15 +34,6 @@ const rank1Revealed = computed(() => isRevealed(1));
 const rank2Revealed = computed(() => isRevealed(2));
 const rank3Revealed = computed(() => isRevealed(3));
 
-watch(rank1Revealed, (revealed) => {
-  if (revealed) {
-    showConfetti.value = true;
-    setTimeout(() => {
-      showConfetti.value = false;
-    }, 1700);
-  }
-});
-
 const revealNext = () => {
   if (!allRevealed.value) {
     revealedCount.value++;
@@ -63,26 +44,13 @@ const revealNext = () => {
 <template>
   <div class="reveal-page">
     <header class="reveal-header">
-      <h2>{{ name ? `Le classement de ${name}` : 'Révélation du classement' }}</h2>
+      <h2 v-if="name">Le classement de <span class="reveal-name">{{ name }}</span></h2>
+      <h2 v-else>Révélation du classement</h2>
       <button class="reveal-close" type="button" @click="$emit('close')">Fermer</button>
     </header>
 
     <!-- Podium on top: 2nd, 1st, 3rd. Revealed last (from the bottom up). -->
     <div class="podium-wrapper">
-      <div v-if="showConfetti" class="confetti">
-        <span
-          v-for="p in confettiPieces"
-          :key="p.id"
-          class="confetti-piece"
-          :style="{
-            left: p.left + '%',
-            backgroundColor: p.color,
-            animationDelay: p.delay + 's',
-            animationDuration: p.duration + 's',
-            transform: `rotate(${p.rotate}deg)`,
-          }"
-        />
-      </div>
 
       <div class="podium">
         <div class="podium-slot" style="animation-delay: 0s">
@@ -181,6 +149,10 @@ const revealNext = () => {
 .reveal-header h2 {
   margin: 0;
   font-size: 20px;
+}
+
+.reveal-name {
+  color: #6366f1;
 }
 
 .reveal-close {
@@ -346,35 +318,6 @@ const revealNext = () => {
 /* Podium */
 .podium-wrapper {
   position: relative;
-}
-
-.confetti {
-  position: absolute;
-  inset: 0;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.confetti-piece {
-  position: absolute;
-  top: -12px;
-  width: 8px;
-  height: 14px;
-  border-radius: 2px;
-  animation-name: confetti-fall;
-  animation-timing-function: ease-in;
-  animation-fill-mode: forwards;
-}
-
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(360px) rotate(360deg);
-    opacity: 0;
-  }
 }
 
 .podium {
