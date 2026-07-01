@@ -525,10 +525,38 @@ const onCelebrationAction = () => {
   .fight-container {
     flex-direction: column;
     align-items: center;
+    gap: 10px;
   }
 
   .vs-badge {
-    margin: -4px 0;
+    width: 44px;
+    height: 44px;
+    font-size: 13px;
+    margin: -2px 0;
+  }
+
+  /* Compact duel cards so both options + VS fit on one phone screen —
+     the core "compare at a glance and choose" must not require scrolling.
+     GameView's <style> is global (not scoped), so target the card classes
+     directly; .arena prefix raises specificity above MotivatorCard's own rules. */
+  .arena .fight-container .card-banner {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+
+  .arena .fight-container .card-body {
+    gap: 8px;
+    padding: 12px 16px 16px;
+  }
+
+  .arena .fight-container .card-image {
+    max-width: 150px;
+    margin: 0 auto;
+  }
+
+  .arena .fight-container .card-description {
+    font-size: 12px;
+    line-height: 1.4;
   }
 }
 </style>

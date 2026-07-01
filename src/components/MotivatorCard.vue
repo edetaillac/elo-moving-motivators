@@ -1,13 +1,29 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Motivator } from '@/store';
 
-defineProps<{ item: Motivator }>();
+const props = defineProps<{ item: Motivator }>();
 defineEmits<{ (e: 'choose'): void }>();
+
+// Pick a readable banner text color from the background luminance (YIQ):
+// dark ink on light banners (yellow, light pink…), white on dark ones.
+// Fixes the low-contrast white-on-yellow / white-on-light-pink cases.
+const isLightColor = computed(() => {
+  const hex = props.item.color.replace('#', '');
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 >= 150;
+});
 </script>
 
 <template>
   <button class="card" type="button" :style="{ '--accent': item.color }" @click="$emit('choose')">
-    <div class="card-banner" :style="{ backgroundColor: item.color }">{{ item.name }}</div>
+    <div
+      class="card-banner"
+      :class="{ 'card-banner--dark-text': isLightColor }"
+      :style="{ backgroundColor: item.color }"
+    >{{ item.name }}</div>
     <div class="card-body">
       <div class="card-image">
         <img :src="require(`@/assets/icons/${item.srcImg}`)" :alt="item.name">
@@ -59,6 +75,12 @@ defineEmits<{ (e: 'choose'): void }>();
   text-transform: uppercase;
   letter-spacing: 0.03em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Light banner (yellow, light pink…): dark ink for a readable contrast. */
+.card-banner--dark-text {
+  color: #14151f;
+  text-shadow: none;
 }
 
 .card-body {
