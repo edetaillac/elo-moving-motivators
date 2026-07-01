@@ -179,7 +179,7 @@ const onCelebrationAction = () => {
   <div class="page">
     <header class="page-header">
       <h1>Moving Motivators</h1>
-      <p v-if="showOnboarding">Découvre ce qui te motive vraiment au travail parmi 10 leviers de motivation intrinsèque.</p>
+      <p v-if="showOnboarding">Découvre ce qui te motive vraiment parmi 10 leviers de motivation.</p>
       <p v-else>Choisis la carte qui te motive le plus à chaque duel.</p>
       <span v-if="!showOnboarding" class="streak-pill">⚔️ {{ matchCount }} duel{{ matchCount === 1 ? '' : 's' }} joués</span>
 
