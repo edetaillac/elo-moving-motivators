@@ -89,7 +89,7 @@ const revealNext = () => {
           <div class="mini-card-wrap">
             <div class="mini-card-content" :class="{ revealed: rank2Revealed }">
               <MotivatorCard :item="items[1]" />
-              <div class="mini-card-bar">
+              <div v-if="rank2Revealed" class="mini-card-bar">
                 <div class="mini-card-bar-fill" :style="{ width: barWidth(items[1].elo) + '%', backgroundColor: items[1].color }" />
               </div>
               <Transition name="mask-fade">
@@ -105,7 +105,7 @@ const revealNext = () => {
           <div class="mini-card-wrap">
             <div class="mini-card-content" :class="{ revealed: rank1Revealed }">
               <MotivatorCard :item="items[0]" />
-              <div class="mini-card-bar">
+              <div v-if="rank1Revealed" class="mini-card-bar">
                 <div class="mini-card-bar-fill" :style="{ width: barWidth(items[0].elo) + '%', backgroundColor: items[0].color }" />
               </div>
               <Transition name="mask-fade">
@@ -120,7 +120,7 @@ const revealNext = () => {
           <div class="mini-card-wrap">
             <div class="mini-card-content" :class="{ revealed: rank3Revealed }">
               <MotivatorCard :item="items[2]" />
-              <div class="mini-card-bar">
+              <div v-if="rank3Revealed" class="mini-card-bar">
                 <div class="mini-card-bar-fill" :style="{ width: barWidth(items[2].elo) + '%', backgroundColor: items[2].color }" />
               </div>
               <Transition name="mask-fade">
@@ -145,7 +145,7 @@ const revealNext = () => {
           <div class="frieze-rank-header">{{ rank }}</div>
           <div class="mini-card-content" :class="{ revealed: isRevealed(rank) }">
             <MotivatorCard :item="items[rank - 1]" />
-            <div class="mini-card-bar">
+            <div v-if="isRevealed(rank)" class="mini-card-bar">
               <div class="mini-card-bar-fill" :style="{ width: barWidth(items[rank - 1].elo) + '%', backgroundColor: items[rank - 1].color }" />
             </div>
             <Transition name="mask-fade">
@@ -257,15 +257,17 @@ const revealNext = () => {
   flex: 1;
   min-height: 0;
   cursor: default;
-  transform: scale(0.9);
-  opacity: 0.5;
-  transition: transform 0.4s cubic-bezier(0.34, 1.5, 0.64, 1), opacity 0.3s ease;
 }
 
-/* When a card is unmasked, it pops in as the "?" fades out. */
+/* When a card is unmasked, it pops in (scale + fade) as the "?" fades out. */
 .mini-card-content.revealed :deep(.card) {
-  transform: scale(1);
-  opacity: 1;
+  animation: card-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes card-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* Reveal cards are narrow: shrink the banner so long names never clip,
