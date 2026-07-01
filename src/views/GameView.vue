@@ -181,19 +181,18 @@ const onCelebrationAction = () => {
       <h1>Moving Motivators</h1>
       <p v-if="showOnboarding">Découvre ce qui te motive vraiment parmi 10 leviers de motivation.</p>
       <p v-else>Choisis la carte qui te motive le plus à chaque duel.</p>
-      <span v-if="!showOnboarding" class="streak-pill">⚔️ {{ matchCount }} duel{{ matchCount === 1 ? '' : 's' }} joués</span>
 
       <div v-if="!showOnboarding && !showExport && !showReveal" class="header-progress">
         <button v-if="rankingUnlocked" class="reveal-trigger" type="button" @click="openResult">
           {{ isManager ? 'Récupérer mon code 🎁' : 'Voir mon classement ✨' }}
         </button>
-        <div v-else class="mini-gauge" :title="`Classement débloqué à ${reliabilityPercent}%`">
-          <span class="mini-gauge-icon">🔒</span>
-          <span class="mini-gauge-caption">Classement</span>
-          <div class="mini-gauge-track">
-            <div class="mini-gauge-fill" :style="{ width: reliabilityPercent + '%' }" />
+        <!-- Single merged indicator: duels played + progress toward unlocking the ranking. -->
+        <div v-else class="progress-pill" :title="`Continue à jouer : ton classement se débloque (${reliabilityPercent} %)`">
+          <span class="progress-pill-count">⚔️ {{ matchCount }} duel{{ matchCount === 1 ? '' : 's' }}</span>
+          <div class="progress-pill-track">
+            <div class="progress-pill-fill" :style="{ width: reliabilityPercent + '%' }" />
           </div>
-          <span class="mini-gauge-label">{{ reliabilityPercent }}%</span>
+          <span class="progress-pill-goal">🔒 progression {{ reliabilityPercent }}%</span>
         </div>
       </div>
     </header>
@@ -297,17 +296,6 @@ const onCelebrationAction = () => {
   color: #667085;
 }
 
-.streak-pill {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: #eef0f6;
-  font-size: 12px;
-  font-weight: 700;
-  color: #667085;
-}
-
 /* Arena */
 .arena {
   display: flex;
@@ -320,6 +308,46 @@ const onCelebrationAction = () => {
   display: flex;
   justify-content: center;
   margin-top: 14px;
+}
+
+/* Merged indicator: duels played + progress bar toward unlocking the ranking. */
+.progress-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.progress-pill-count {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1a1c29;
+  white-space: nowrap;
+}
+
+.progress-pill-track {
+  width: 84px;
+  height: 7px;
+  border-radius: 999px;
+  background: #e6e8f0;
+  overflow: hidden;
+}
+
+.progress-pill-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #818cf8, #6366f1);
+  transition: width 0.4s ease;
+}
+
+.progress-pill-goal {
+  font-size: 12px;
+  font-weight: 700;
+  color: #667085;
+  white-space: nowrap;
 }
 
 /* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
@@ -343,50 +371,6 @@ const onCelebrationAction = () => {
 .reveal-trigger:active {
   transform: translateY(3px);
   box-shadow: 0 1px 0 #4338ca;
-}
-
-.mini-gauge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-}
-
-.mini-gauge-icon {
-  font-size: 12px;
-  line-height: 1;
-}
-
-.mini-gauge-caption {
-  font-size: 12px;
-  font-weight: 700;
-  color: #667085;
-}
-
-.mini-gauge-track {
-  width: 90px;
-  height: 7px;
-  border-radius: 999px;
-  background: #e6e8f0;
-  overflow: hidden;
-}
-
-.mini-gauge-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #818cf8, #6366f1);
-  transition: width 0.4s ease;
-}
-
-.mini-gauge-label {
-  font-size: 12px;
-  font-weight: 800;
-  color: #6366f1;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 .fight-container {
