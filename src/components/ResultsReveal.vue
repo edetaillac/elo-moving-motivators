@@ -76,7 +76,7 @@ const revealNext = () => {
       </div>
 
       <div class="podium">
-        <div class="podium-slot">
+        <div class="podium-slot" style="animation-delay: 0s">
           <div class="mini-card-wrap">
             <div class="mini-card-content">
               <MotivatorCard :item="items[1]" />
@@ -89,7 +89,7 @@ const revealNext = () => {
           <div class="podium-block podium-block--2" :class="{ revealed: rank2Revealed }">2</div>
         </div>
 
-        <div class="podium-slot">
+        <div class="podium-slot" style="animation-delay: 0.07s">
           <span v-if="rank1Revealed" class="podium-crown">👑</span>
           <div class="mini-card-wrap">
             <div class="mini-card-content">
@@ -103,7 +103,7 @@ const revealNext = () => {
           <div class="podium-block podium-block--1" :class="{ revealed: rank1Revealed }">1</div>
         </div>
 
-        <div class="podium-slot">
+        <div class="podium-slot" style="animation-delay: 0.14s">
           <div class="mini-card-wrap">
             <div class="mini-card-content">
               <MotivatorCard :item="items[2]" />
@@ -120,7 +120,12 @@ const revealNext = () => {
 
     <!-- Frieze below: 4th to 10th, revealed first (10th first, bottom-up). -->
     <ol class="frieze">
-      <li v-for="rank in FRIEZE_RANKS" :key="rank" class="frieze-slot">
+      <li
+        v-for="(rank, i) in FRIEZE_RANKS"
+        :key="rank"
+        class="frieze-slot"
+        :style="{ animationDelay: (0.21 + i * 0.07) + 's' }"
+      >
         <div class="mini-card-wrap">
           <div class="frieze-rank-header">{{ rank }}</div>
           <div class="mini-card-content">
@@ -190,6 +195,20 @@ const revealNext = () => {
 
 .frieze-slot {
   width: 152px;
+  animation: reveal-appear 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
+}
+
+/* Staggered entrance so the ranking grid assembles progressively on open. */
+@keyframes reveal-appear {
+  from { opacity: 0; transform: translateY(14px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frieze-slot,
+  .podium-slot {
+    animation: none;
+  }
 }
 
 .frieze-rank-header {
@@ -338,6 +357,7 @@ const revealNext = () => {
   flex-direction: column;
   align-items: center;
   width: 190px;
+  animation: reveal-appear 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
 }
 
 .podium-crown {
