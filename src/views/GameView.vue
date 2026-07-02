@@ -26,17 +26,43 @@ const startGame = (name: string) => {
   showOnboarding.value = false;
 };
 
+// Pairs already played this cycle, keyed by sorted ids. Prevents re-proposing a
+// duel until every unique pair has been seen; then a fresh cycle starts.
+const playedPairs = ref<Set<string>>(new Set());
+const TOTAL_PAIRS = (state.items.length * (state.items.length - 1)) / 2;
+const pairKey = (a: Motivator, b: Motivator): string =>
+  a.id < b.id ? `${a.id}-${b.id}` : `${b.id}-${a.id}`;
+
 const pickTwoDistinctItems = (): Motivator[] => {
-  const pickFunction = Math.random() < 0.6 ? weightedRandomItem : randomItem; // 3/5 chance for weighted
-
-  const firstItem = pickFunction();
-  let secondItem = pickFunction();
-
-  while (secondItem === firstItem) {
-    secondItem = pickFunction();
+  // Every unique pair seen → start a new cycle.
+  if (playedPairs.value.size >= TOTAL_PAIRS) {
+    playedPairs.value.clear();
   }
 
-  return [firstItem, secondItem];
+  const pickFunction = Math.random() < 0.6 ? weightedRandomItem : randomItem; // 3/5 chance for weighted
+
+  // Try weighted/random picks first, rejecting pairs already played this cycle.
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const firstItem = pickFunction();
+    let secondItem = pickFunction();
+    while (secondItem === firstItem) {
+      secondItem = pickFunction();
+    }
+    if (!playedPairs.value.has(pairKey(firstItem, secondItem))) {
+      return [firstItem, secondItem];
+    }
+  }
+
+  // Fallback when few pairs remain: pick uniformly among the unplayed ones.
+  const remaining: Motivator[][] = [];
+  for (let i = 0; i < state.items.length; i++) {
+    for (let j = i + 1; j < state.items.length; j++) {
+      if (!playedPairs.value.has(pairKey(state.items[i], state.items[j]))) {
+        remaining.push([state.items[i], state.items[j]]);
+      }
+    }
+  }
+  return remaining[Math.floor(Math.random() * remaining.length)];
 }
 
 function randomItem(): Motivator {
@@ -124,6 +150,9 @@ const chooseFavorite = (winner: Motivator, loser: Motivator) => {
   // Increment shown count for both winner and loser
   winner.shownCount++;
   loser.shownCount++;
+
+  // Remember this pair so it isn't re-proposed until the cycle resets.
+  playedPairs.value.add(pairKey(winner, loser));
 
   // Track how long the same trio has held the top spots, regardless of their
   // internal order (near-tied items can keep swapping 1st/2nd without that
