@@ -4,10 +4,10 @@
   </defs>
   <g clip-path="url(#card)">
     <rect x="3" y="2.5" width="26" height="27" fill="#ffffff"/>
-    <rect x="3" y="2.5" width="26" height="9" fill="#6366f1"/>
-    <rect x="8" y="16" width="16" height="3" rx="1.5" fill="#fbbf24"/>
-    <rect x="8" y="20.5" width="12" height="3" rx="1.5" fill="#f45bac"/>
-    <rect x="8" y="25" width="8" height="3" rx="1.5" fill="#34d399"/>
+    <rect x="3" y="2.5" width="26" height="9" fill="#8385C4"/>
+    <rect x="8" y="16" width="16" height="3" rx="1.5" fill="#D2A33E"/>
+    <rect x="8" y="20.5" width="12" height="3" rx="1.5" fill="#C46242"/>
+    <rect x="8" y="25" width="8" height="3" rx="1.5" fill="#5FA089"/>
   </g>
   <rect x="3" y="2.5" width="26" height="27" rx="6" fill="none" stroke="#e6e8f0" stroke-width="1"/>
 </svg>
