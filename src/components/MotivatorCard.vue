@@ -93,7 +93,9 @@ const isLightColor = computed(() => {
 }
 
 .card-image {
-  width: 100%;
+  width: 55%;
+  max-width: 150px;
+  margin: 0 auto;
 }
 
 .card-image img {
@@ -104,8 +106,8 @@ const isLightColor = computed(() => {
 
 .card-description {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #667085;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475467;
 }
 </style>
