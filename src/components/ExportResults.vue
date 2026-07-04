@@ -108,8 +108,8 @@ const downloadCode = () => {
 
 .export-code:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: #B4552F;
+  box-shadow: 0 0 0 3px rgba(180, 85, 47, 0.15);
 }
 
 .export-actions {
@@ -122,8 +122,8 @@ const downloadCode = () => {
 /* Chunky, Duolingo-style "pressable" button. */
 .export-primary {
   border: none;
-  background: #6366f1;
-  box-shadow: 0 4px 0 #4338ca;
+  background: #B4552F;
+  box-shadow: 0 4px 0 #8A3C1E;
   color: #ffffff;
   border-radius: 10px;
   padding: 12px 24px;
@@ -139,7 +139,7 @@ const downloadCode = () => {
 
 .export-primary:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #4338ca;
+  box-shadow: 0 1px 0 #8A3C1E;
 }
 
 .export-secondary {
@@ -155,8 +155,8 @@ const downloadCode = () => {
 }
 
 .export-secondary:hover {
-  border-color: #6366f1;
-  color: #6366f1;
+  border-color: #B4552F;
+  color: #B4552F;
 }
 
 .export-hint {

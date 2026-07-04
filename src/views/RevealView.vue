@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { Motivator } from '@/store';
 import { decodeResults } from '@/results';
 import ResultsReveal from '@/components/ResultsReveal.vue';
-import { t, locale, setLocale } from '@/i18n';
+import { t } from '@/i18n';
 
 const codeInput = ref('');
 const error = ref('');
@@ -51,25 +51,6 @@ const reset = () => {
     />
 
     <div v-else class="uploader">
-      <div class="lang-switch">
-        <button
-          type="button"
-          class="lang-flag"
-          :class="{ active: locale === 'fr' }"
-          :aria-pressed="locale === 'fr'"
-          aria-label="Français"
-          @click="setLocale('fr')"
-        >🇫🇷</button>
-        <button
-          type="button"
-          class="lang-flag"
-          :class="{ active: locale === 'en' }"
-          :aria-pressed="locale === 'en'"
-          aria-label="English"
-          @click="setLocale('en')"
-        >🇬🇧</button>
-      </div>
-
       <div class="uploader-emoji">🎬</div>
       <h1>{{ t('revealPage.title') }}</h1>
       <p class="uploader-lead">{{ t('revealPage.lead') }}</p>
@@ -120,37 +101,6 @@ const reset = () => {
   text-align: center;
 }
 
-.lang-switch {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  display: flex;
-  gap: 4px;
-}
-
-.lang-flag {
-  border: none;
-  background: none;
-  font-size: 18px;
-  line-height: 1;
-  padding: 4px;
-  border-radius: 8px;
-  cursor: pointer;
-  opacity: 0.4;
-  filter: grayscale(0.6);
-  transition: opacity 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
-}
-
-.lang-flag:hover {
-  opacity: 0.8;
-}
-
-.lang-flag.active {
-  opacity: 1;
-  filter: none;
-  background: #eef0f6;
-}
-
 .uploader-emoji {
   font-size: 40px;
   line-height: 1;
@@ -187,8 +137,8 @@ const reset = () => {
 
 .uploader-code:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: #B4552F;
+  box-shadow: 0 0 0 3px rgba(180, 85, 47, 0.15);
 }
 
 .uploader-error {
@@ -209,8 +159,8 @@ const reset = () => {
 /* Chunky, Duolingo-style "pressable" button. */
 .uploader-primary {
   border: none;
-  background: #6366f1;
-  box-shadow: 0 4px 0 #4338ca;
+  background: #B4552F;
+  box-shadow: 0 4px 0 #8A3C1E;
   color: #ffffff;
   border-radius: 10px;
   padding: 14px 26px;
@@ -226,7 +176,7 @@ const reset = () => {
 
 .uploader-primary:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #4338ca;
+  box-shadow: 0 1px 0 #8A3C1E;
 }
 
 .uploader-primary:disabled {
@@ -248,8 +198,8 @@ const reset = () => {
 }
 
 .uploader-file:hover {
-  border-color: #6366f1;
-  color: #6366f1;
+  border-color: #B4552F;
+  color: #B4552F;
 }
 
 /* Mobile only — desktop layout above is untouched. */

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { MOTIVATORS } from '@/store';
-import { t, locale, setLocale } from '@/i18n';
+import { t } from '@/i18n';
 
 const emit = defineEmits<{ (e: 'start', name: string): void }>();
 
@@ -36,25 +36,6 @@ const deck = DECK_IDS.map((id, i) => {
 
 <template>
   <div class="onboarding">
-    <div class="lang-switch">
-      <button
-        type="button"
-        class="lang-flag"
-        :class="{ active: locale === 'fr' }"
-        :aria-pressed="locale === 'fr'"
-        aria-label="Français"
-        @click="setLocale('fr')"
-      >🇫🇷</button>
-      <button
-        type="button"
-        class="lang-flag"
-        :class="{ active: locale === 'en' }"
-        :aria-pressed="locale === 'en'"
-        aria-label="English"
-        @click="setLocale('en')"
-      >🇬🇧</button>
-    </div>
-
     <div class="deck" aria-hidden="true">
       <div
         v-for="card in deck"
@@ -101,37 +82,6 @@ const deck = DECK_IDS.map((id, i) => {
   border-radius: 16px;
   padding: 40px 32px;
   text-align: center;
-}
-
-.lang-switch {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  display: flex;
-  gap: 4px;
-}
-
-.lang-flag {
-  border: none;
-  background: none;
-  font-size: 18px;
-  line-height: 1;
-  padding: 4px;
-  border-radius: 8px;
-  cursor: pointer;
-  opacity: 0.4;
-  filter: grayscale(0.6);
-  transition: opacity 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
-}
-
-.lang-flag:hover {
-  opacity: 0.8;
-}
-
-.lang-flag.active {
-  opacity: 1;
-  filter: none;
-  background: #eef0f6;
 }
 
 /* Fanned deck of motivator cards, dealt in then gently floating. */
@@ -235,15 +185,15 @@ const deck = DECK_IDS.map((id, i) => {
 
 .onboarding-input:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: #B4552F;
+  box-shadow: 0 0 0 3px rgba(180, 85, 47, 0.15);
 }
 
 /* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
 .onboarding-cta {
   border: none;
-  background: #6366f1;
-  box-shadow: 0 4px 0 #4338ca;
+  background: #B4552F;
+  box-shadow: 0 4px 0 #8A3C1E;
   color: #ffffff;
   border-radius: 10px;
   padding: 14px 32px;
@@ -259,7 +209,7 @@ const deck = DECK_IDS.map((id, i) => {
 
 .onboarding-cta:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #4338ca;
+  box-shadow: 0 1px 0 #8A3C1E;
 }
 
 .onboarding-cta:disabled {

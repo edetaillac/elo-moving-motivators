@@ -20,10 +20,18 @@ const showCelebration = ref(false);
 const showExport = ref(false);
 const showReveal = ref(false);
 const playerName = ref('');
+// Held back until the onboarding card has finished leaving, so the game header
+// (duel count + progress) doesn't briefly coexist with the onboarding card
+// during the phase switch.
+const headerReady = ref(false);
+
+const SAVE_KEY = 'mm.save.v1';
 
 const startGame = (name: string) => {
   playerName.value = name;
   showOnboarding.value = false;
+  setTimeout(() => { headerReady.value = true; }, 220);
+  saveGame();
 };
 
 // Pairs already played this cycle, keyed by sorted ids. Prevents re-proposing a
@@ -95,9 +103,14 @@ const selectedItems = ref<Motivator[]>(pickTwoDistinctItems());
 // Firing chooseFavorite again before it settles can leave the transition's
 // enter classes stuck, making the cards invisible.
 const isAnimating = ref(false);
-const matchHistory = ref<{ winner: Motivator; loser: Motivator }[]>([]);
+// Store ids, not live Motivator refs: the elo of a referenced item keeps
+// mutating after the duel, and ids serialize cleanly for persistence.
+const matchHistory = ref<{ winnerId: number; loserId: number }[]>([]);
 const matchCount = ref(0);
 const showHistory = ref(false);
+const confirmReset = ref(false);
+
+const itemById = (id: number) => state.items.find((m) => m.id === id) as Motivator;
 
 // Ranking reliability: hidden until every item has enough duels behind it
 // AND the top of the ranking has stopped moving around.
@@ -135,16 +148,19 @@ const reliabilityPercent = computed(() => Math.round(reliability.value * 100));
 const chooseFavorite = (winner: Motivator, loser: Motivator) => {
   if (isAnimating.value) return;
   isAnimating.value = true;
+  // Lock must outlast the card transition (fade-scale, 180ms out + 180ms in
+  // ≈ 360ms). A shorter lock let a fast second choice strand the transition's
+  // enter classes, dropping the input and leaving the cards invisible.
   setTimeout(() => {
     isAnimating.value = false;
-  }, 200);
+  }, 380);
 
   const [newWinnerElo, newLoserElo] = updateElo(winner.elo, loser.elo);
   winner.elo = newWinnerElo;
   loser.elo = newLoserElo;
 
   // Update match history and count
-  matchHistory.value.unshift({ winner, loser });
+  matchHistory.value.unshift({ winnerId: winner.id, loserId: loser.id });
   matchCount.value++;
 
   // Increment shown count for both winner and loser
@@ -170,9 +186,79 @@ const chooseFavorite = (winner: Motivator, loser: Motivator) => {
   }
 
   selectedItems.value = pickTwoDistinctItems();
+  saveGame();
 };
 
+// Persist the in-progress game so a refresh doesn't wipe 40-60 duels of work.
+function saveGame() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      v: 1,
+      playerName: playerName.value,
+      started: !showOnboarding.value,
+      matchCount: matchCount.value,
+      elos: Object.fromEntries(state.items.map((i) => [i.id, i.elo])),
+      shown: Object.fromEntries(state.items.map((i) => [i.id, i.shownCount])),
+      playedPairs: [...playedPairs.value],
+      stableStreak: stableStreak.value,
+      previousTopGroup,
+      rankingUnlocked: rankingUnlocked.value,
+      history: matchHistory.value,
+    }));
+  } catch {
+    // localStorage full or blocked: a lost save isn't worth crashing over.
+  }
+}
+
+// Restore a saved game on load. Returns silently (fresh game) if none/corrupt.
+function restoreGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (!p || p.v !== 1 || !p.started) return;
+    state.items.forEach((i) => {
+      if (typeof p.elos?.[i.id] === 'number') i.elo = p.elos[i.id];
+      if (typeof p.shown?.[i.id] === 'number') i.shownCount = p.shown[i.id];
+    });
+    playerName.value = p.playerName ?? '';
+    matchCount.value = p.matchCount ?? 0;
+    playedPairs.value = new Set(Array.isArray(p.playedPairs) ? p.playedPairs : []);
+    stableStreak.value = p.stableStreak ?? 0;
+    previousTopGroup = Array.isArray(p.previousTopGroup) ? p.previousTopGroup : [];
+    rankingUnlocked.value = !!p.rankingUnlocked;
+    matchHistory.value = Array.isArray(p.history) ? p.history : [];
+    showOnboarding.value = false;
+    headerReady.value = true;
+    selectedItems.value = pickTwoDistinctItems();
+  } catch {
+    // Corrupt save: fall back to a fresh game (onboarding stays visible).
+  }
+}
+
+// Wipe the saved game and start over from onboarding.
+function resetGame() {
+  try { localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ }
+  state.items.forEach((i) => { i.elo = 1000; i.shownCount = 0; });
+  playedPairs.value = new Set();
+  matchHistory.value = [];
+  matchCount.value = 0;
+  stableStreak.value = 0;
+  previousTopGroup = [];
+  rankingUnlocked.value = false;
+  showCelebration.value = false;
+  showExport.value = false;
+  showReveal.value = false;
+  showHistory.value = false;
+  confirmReset.value = false;
+  playerName.value = '';
+  headerReady.value = false;
+  showOnboarding.value = true;
+  selectedItems.value = pickTwoDistinctItems();
+}
+
 onMounted(() => {
+  restoreGame();
   window.addEventListener('keydown', handleKeyDown);
 });
 
@@ -212,7 +298,7 @@ const onCelebrationAction = () => {
       <p v-if="showOnboarding">{{ t('header.subtitle.onboarding') }}</p>
       <p v-else>{{ t('header.subtitle.duel') }}</p>
 
-      <div v-if="!showOnboarding && !showExport && !showReveal" class="header-progress">
+      <div v-if="headerReady && !showExport && !showReveal" class="header-progress">
         <button v-if="rankingUnlocked" class="reveal-trigger" type="button" @click="openResult">
           {{ isManager ? t('header.getCode') : t('header.seeRanking') }}
         </button>
@@ -223,6 +309,26 @@ const onCelebrationAction = () => {
             <div class="progress-pill-fill" :style="{ width: reliabilityPercent + '%' }" />
           </div>
           <span class="progress-pill-goal">{{ t('header.progress', { p: reliabilityPercent }) }}</span>
+        </div>
+
+        <!-- Restart, stacked under the duel count: findable, and stacks cleanly on mobile.
+             Labelled, not icon-only, so it's not mistaken for "reload / next duel". -->
+        <button
+          v-if="!confirmReset"
+          class="reset-btn"
+          type="button"
+          @click="confirmReset = true"
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <path d="M21 3v5h-5" />
+          </svg>
+          <span>{{ t('footer.restart') }}</span>
+        </button>
+        <div v-else class="reset-confirm">
+          <span class="reset-confirm-label">{{ t('footer.restartConfirm') }}</span>
+          <button class="reset-yes" type="button" @click="resetGame">{{ t('footer.restartYes') }}</button>
+          <button class="reset-no" type="button" @click="confirmReset = false">{{ t('footer.restartCancel') }}</button>
         </div>
       </div>
     </header>
@@ -265,14 +371,14 @@ const onCelebrationAction = () => {
       </Transition>
     </div>
 
-    <footer v-if="!showOnboarding && !showExport && !showReveal" class="page-footer">
-      <button class="history-toggle" type="button" @click="showHistory = !showHistory">
+    <footer v-if="headerReady && !showExport && !showReveal" class="page-footer">
+      <button class="footer-link" type="button" @click="showHistory = !showHistory">
         {{ t('footer.history') }} {{ showHistory ? '▾' : '▸' }}
       </button>
       <ul v-if="showHistory" class="history-list">
         <li v-for="(match, index) in matchHistory" :key="index" class="history-row">
-          <span class="history-winner">🏆 {{ mName(match.winner) }}</span>
-          <span class="history-loser">{{ mName(match.loser) }}</span>
+          <span class="history-winner">🏆 {{ mName(itemById(match.winnerId)) }}</span>
+          <span class="history-loser">{{ mName(itemById(match.loserId)) }}</span>
         </li>
       </ul>
     </footer>
@@ -323,7 +429,7 @@ const onCelebrationAction = () => {
 .page-header p {
   margin: 0;
   font-size: 14px;
-  color: #667085;
+  color: #5f6675;
 }
 
 /* Arena */
@@ -336,8 +442,84 @@ const onCelebrationAction = () => {
 
 .header-progress {
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  gap: 10px;
   margin-top: 14px;
+}
+
+/* Restart control under the duel count. Labelled (icon + text) so it reads as
+   "start over", not "reload / next duel". Kept discreet. */
+.reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  color: #5f6675;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.reset-btn svg {
+  flex-shrink: 0;
+}
+
+.reset-btn:hover {
+  color: #B4552F;
+  border-color: rgba(180, 85, 47, 0.4);
+}
+
+.reset-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.reset-confirm-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475467;
+}
+
+.reset-yes,
+.reset-no {
+  border: none;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.reset-yes {
+  background: #B4552F;
+  color: #ffffff;
+}
+
+.reset-yes:hover {
+  background: #8A3C1E;
+}
+
+.reset-no {
+  background: #eef0f6;
+  color: #667085;
+}
+
+.reset-no:hover {
+  color: #1a1c29;
 }
 
 /* Merged indicator: duels played + progress bar toward unlocking the ranking. */
@@ -369,7 +551,7 @@ const onCelebrationAction = () => {
 .progress-pill-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #818cf8, #6366f1);
+  background: linear-gradient(90deg, #D98A5E, #B4552F);
   transition: width 0.4s ease;
 }
 
@@ -383,8 +565,8 @@ const onCelebrationAction = () => {
 /* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
 .reveal-trigger {
   border: none;
-  background: #6366f1;
-  box-shadow: 0 4px 0 #4338ca;
+  background: #B4552F;
+  box-shadow: 0 4px 0 #8A3C1E;
   border-radius: 10px;
   padding: 10px 18px;
   font-size: 13px;
@@ -400,7 +582,7 @@ const onCelebrationAction = () => {
 
 .reveal-trigger:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #4338ca;
+  box-shadow: 0 1px 0 #8A3C1E;
 }
 
 .fight-container {
@@ -419,7 +601,7 @@ const onCelebrationAction = () => {
   height: 56px;
   border-radius: 50%;
   background: linear-gradient(155deg, #2a2d3e, #14151f);
-  box-shadow: 0 0 0 5px #f0f1f8, 0 0 0 6px rgba(99, 102, 241, 0.25), 0 8px 16px rgba(20, 21, 31, 0.25);
+  box-shadow: 0 0 0 5px #f0f1f8, 0 0 0 6px rgba(180, 85, 47, 0.25), 0 8px 16px rgba(20, 21, 31, 0.25);
   color: #ffffff;
   font-size: 15px;
   font-weight: 700;
@@ -432,7 +614,7 @@ const onCelebrationAction = () => {
   margin: 20px 0 0;
   text-align: center;
   font-size: 12px;
-  color: #98a2b3;
+  color: #5f6675;
 }
 
 .fade-scale-enter-active,
@@ -487,20 +669,20 @@ const onCelebrationAction = () => {
   text-align: center;
 }
 
-.history-toggle {
+.footer-link {
   background: none;
   border: none;
   font: inherit;
   font-size: 11px;
   font-weight: 600;
-  color: #b0b5c2;
+  color: #5f6675;
   cursor: pointer;
   padding: 4px 10px;
   transition: color 0.15s ease;
 }
 
-.history-toggle:hover {
-  color: #6366f1;
+.footer-link:hover {
+  color: #B4552F;
 }
 
 .history-list {
@@ -531,7 +713,7 @@ const onCelebrationAction = () => {
 }
 
 .history-loser {
-  color: #98a2b3;
+  color: #5f6675;
   text-decoration: line-through;
 }
 
@@ -539,14 +721,21 @@ const onCelebrationAction = () => {
   .fight-container {
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 18px;
+  }
+
+  /* Stacked cards: force equal full width, else each card sizes to its own
+     text and the two duel cards come out different widths. */
+  .arena .fight-container .card {
+    width: 100%;
+    max-width: 440px;
   }
 
   .vs-badge {
     width: 44px;
     height: 44px;
     font-size: 13px;
-    margin: -2px 0;
+    margin: 0;
   }
 
   /* Compact duel cards so both options + VS fit on one phone screen —

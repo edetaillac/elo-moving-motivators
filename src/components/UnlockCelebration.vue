@@ -1,19 +1,36 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue';
 import { t } from '@/i18n';
 
 defineProps<{ name?: string; manager?: boolean }>();
-defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
+const emit = defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
+
+// Basic dialog a11y: focus the primary action on open, close on Escape.
+const primaryBtn = ref<HTMLButtonElement | null>(null);
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') emit('close');
+};
+onMounted(() => {
+  primaryBtn.value?.focus();
+  window.addEventListener('keydown', onKeydown);
+});
+onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
-  <div class="celebration-backdrop">
+  <div class="celebration-backdrop" @click.self="$emit('close')">
 
-    <div class="celebration-card">
-      <div class="celebration-emoji">🎉</div>
-      <h2>{{ name ? t('celebration.title', { name }) : t('celebration.titleNoName') }}</h2>
+    <div
+      class="celebration-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="celebration-title"
+    >
+      <div class="celebration-emoji" aria-hidden="true">🎉</div>
+      <h2 id="celebration-title">{{ name ? t('celebration.title', { name }) : t('celebration.titleNoName') }}</h2>
       <p>{{ manager ? t('celebration.textManager') : t('celebration.textSolo') }}</p>
       <div class="celebration-actions">
-        <button class="celebration-primary" type="button" @click="$emit('action')">
+        <button ref="primaryBtn" class="celebration-primary" type="button" @click="$emit('action')">
           {{ manager ? t('celebration.primaryManager') : t('celebration.primarySolo') }}
         </button>
         <button class="celebration-secondary" type="button" @click="$emit('close')">
@@ -72,6 +89,13 @@ defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
   100% { transform: scale(1) rotate(0); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .celebration-card,
+  .celebration-emoji {
+    animation: none;
+  }
+}
+
 .celebration-card h2 {
   margin: 0 0 12px;
   font-size: 21px;
@@ -94,8 +118,8 @@ defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
 /* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
 .celebration-primary {
   border: none;
-  background: #6366f1;
-  box-shadow: 0 4px 0 #4338ca;
+  background: #B4552F;
+  box-shadow: 0 4px 0 #8A3C1E;
   color: #ffffff;
   border-radius: 10px;
   padding: 14px 20px;
@@ -111,13 +135,25 @@ defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
 
 .celebration-primary:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #4338ca;
+  box-shadow: 0 1px 0 #8A3C1E;
+}
+
+/* The button is focused on open for a11y. Hide the default ring on
+   programmatic/mouse focus so it matches the other buttons, but keep a
+   clean, on-brand ring for keyboard users. */
+.celebration-primary:focus {
+  outline: none;
+}
+
+.celebration-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 4px 0 #8A3C1E, 0 0 0 3px rgba(180, 85, 47, 0.45);
 }
 
 .celebration-secondary {
   border: none;
   background: none;
-  color: #98a2b3;
+  color: #5f6675;
   font-size: 12px;
   font-weight: 600;
   padding: 6px;
@@ -126,6 +162,6 @@ defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
 }
 
 .celebration-secondary:hover {
-  color: #6366f1;
+  color: #B4552F;
 }
 </style>

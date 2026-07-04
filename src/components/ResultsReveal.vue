@@ -155,7 +155,7 @@ const revealNext = () => {
 }
 
 .reveal-name {
-  color: #6366f1;
+  color: #B4552F;
 }
 
 .reveal-close {
@@ -170,8 +170,8 @@ const revealNext = () => {
 }
 
 .reveal-close:hover {
-  border-color: #6366f1;
-  color: #6366f1;
+  border-color: #B4552F;
+  color: #B4552F;
 }
 
 /* Frieze */
@@ -201,6 +201,11 @@ const revealNext = () => {
   .podium-slot {
     animation: none;
   }
+
+  /* Cards still appear on reveal, just without the pop scale animation. */
+  .mini-card-content.revealed :deep(.card) {
+    animation: none;
+  }
 }
 
 .frieze-rank-header {
@@ -208,7 +213,7 @@ const revealNext = () => {
   text-align: center;
   font-size: 13px;
   font-weight: 800;
-  color: #98a2b3;
+  color: #5f6675;
   margin-bottom: 6px;
 }
 
@@ -268,7 +273,7 @@ const revealNext = () => {
 .mini-card-content :deep(.card-description) {
   font-size: 12px;
   line-height: 1.45;
-  color: #7a8194;
+  color: #5f6675;
 }
 
 .frieze-slot .mini-card-wrap {
@@ -373,9 +378,14 @@ const revealNext = () => {
 /* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
 .reveal-next {
   display: block;
+  /* Sticky so the reveal action stays reachable on short viewports, where it
+     otherwise sat below the fold and made the page look frozen on open. */
+  position: sticky;
+  bottom: 16px;
+  z-index: 2;
   margin: 28px auto 0;
-  background: #6366f1;
-  box-shadow: 0 4px 0 #4338ca;
+  background: #B4552F;
+  box-shadow: 0 4px 0 #8A3C1E;
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -392,7 +402,7 @@ const revealNext = () => {
 
 .reveal-next:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #4338ca;
+  box-shadow: 0 1px 0 #8A3C1E;
 }
 
 .reveal-done {
