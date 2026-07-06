@@ -5,15 +5,19 @@ import { state, Motivator } from '@/store';
 import { updateElo } from '@/elo';
 import MotivatorCard from '@/components/MotivatorCard.vue';
 import OnboardingIntro from '@/components/OnboardingIntro.vue';
+import ModeSelector, { Mode } from '@/components/ModeSelector.vue';
 import UnlockCelebration from '@/components/UnlockCelebration.vue';
 import ExportResults from '@/components/ExportResults.vue';
 import ResultsReveal from '@/components/ResultsReveal.vue';
 import { t, mName } from '@/i18n';
 
-// Manager mode is opted into via ?mode=manager on the link the manager shares.
-// Default (no param) = solo: the player reveals their own ranking.
+// Mode is chosen on the onboarding screen via the capsule, pre-selected from
+// the ?mode=manager param on a shared link (default = solo), then frozen once
+// the game starts (the capsule only lives on onboarding). isManager stays a
+// computed so every downstream consumer is unchanged.
 const route = useRoute();
-const isManager = computed(() => route.query.mode === 'manager');
+const mode = ref<Mode>(route.query.mode === 'manager' ? 'manager' : 'solo');
+const isManager = computed(() => mode.value === 'manager');
 
 const showOnboarding = ref(true);
 const showCelebration = ref(false);
@@ -195,6 +199,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       v: 1,
       playerName: playerName.value,
+      mode: mode.value,
       started: !showOnboarding.value,
       matchCount: matchCount.value,
       elos: Object.fromEntries(state.items.map((i) => [i.id, i.elo])),
@@ -222,6 +227,9 @@ function restoreGame() {
       if (typeof p.shown?.[i.id] === 'number') i.shownCount = p.shown[i.id];
     });
     playerName.value = p.playerName ?? '';
+    // Restore the chosen mode: an in-progress game has already locked it in,
+    // so it takes precedence over the URL param.
+    if (p.mode === 'manager' || p.mode === 'solo') mode.value = p.mode;
     matchCount.value = p.matchCount ?? 0;
     playedPairs.value = new Set(Array.isArray(p.playedPairs) ? p.playedPairs : []);
     stableStreak.value = p.stableStreak ?? 0;
@@ -252,6 +260,9 @@ function resetGame() {
   showHistory.value = false;
   confirmReset.value = false;
   playerName.value = '';
+  // Back to onboarding: re-default the mode from the URL so the capsule reflects
+  // how the game was opened.
+  mode.value = route.query.mode === 'manager' ? 'manager' : 'solo';
   headerReady.value = false;
   showOnboarding.value = true;
   selectedItems.value = pickTwoDistinctItems();
@@ -297,6 +308,9 @@ const onCelebrationAction = () => {
       <h1>Moving Motivators</h1>
       <p v-if="showOnboarding">{{ t('header.subtitle.onboarding') }}</p>
       <p v-else>{{ t('header.subtitle.duel') }}</p>
+
+      <!-- Mode picker: onboarding only, same spot the progress pill takes over. -->
+      <ModeSelector v-if="showOnboarding" v-model="mode" />
 
       <div v-if="headerReady && !showExport && !showReveal" class="header-progress">
         <button v-if="rankingUnlocked" class="reveal-trigger" type="button" @click="openResult">
