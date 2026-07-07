@@ -24,9 +24,10 @@ const showCelebration = ref(false);
 const showExport = ref(false);
 const showReveal = ref(false);
 const playerName = ref('');
-// Held back until the onboarding card has finished leaving, so the game header
-// (duel count + progress) doesn't briefly coexist with the onboarding card
-// during the phase switch.
+// Held back until the onboarding card has actually finished leaving, so the game
+// header (duel count + progress) doesn't briefly coexist with the onboarding
+// card during the phase switch. Flipped by the phase transition's @after-leave,
+// not a guessed timeout that has to match the CSS duration.
 const headerReady = ref(false);
 
 const SAVE_KEY = 'mm.save.v1';
@@ -34,9 +35,11 @@ const SAVE_KEY = 'mm.save.v1';
 const startGame = (name: string) => {
   playerName.value = name;
   showOnboarding.value = false;
-  setTimeout(() => { headerReady.value = true; }, 220);
   saveGame();
 };
+
+// The onboarding card has left the stage: safe to show the header now.
+const onPhaseAfterLeave = () => { headerReady.value = true; };
 
 // Pairs already played this cycle, keyed by sorted ids. Prevents re-proposing a
 // duel until every unique pair has been seen; then a fresh cycle starts.
@@ -103,9 +106,10 @@ function weightedRandomItem(): Motivator {
 }
 
 const selectedItems = ref<Motivator[]>(pickTwoDistinctItems());
-// Blocks new picks while the card transition (fade-scale, 180ms) is still running.
+// Blocks new picks while the card transition (fade-scale) is still running.
 // Firing chooseFavorite again before it settles can leave the transition's
-// enter classes stuck, making the cards invisible.
+// enter classes stuck, making the cards invisible. Released by the transition's
+// own @after-enter (see onDuelSettled), not a timeout guessed to match the CSS.
 const isAnimating = ref(false);
 // Store ids, not live Motivator refs: the elo of a referenced item keeps
 // mutating after the duel, and ids serialize cleanly for persistence.
@@ -151,13 +155,10 @@ const reliabilityPercent = computed(() => Math.round(reliability.value * 100));
 
 const chooseFavorite = (winner: Motivator, loser: Motivator) => {
   if (isAnimating.value) return;
+  // Locked here, released in onDuelSettled when the card transition has fully
+  // entered. The bumped matchCount below rekeys the <Transition>, so it always
+  // runs a leave+enter and @after-enter always fires to clear the lock.
   isAnimating.value = true;
-  // Lock must outlast the card transition (fade-scale, 180ms out + 180ms in
-  // ≈ 360ms). A shorter lock let a fast second choice strand the transition's
-  // enter classes, dropping the input and leaving the cards invisible.
-  setTimeout(() => {
-    isAnimating.value = false;
-  }, 380);
 
   const [newWinnerElo, newLoserElo] = updateElo(winner.elo, loser.elo);
   winner.elo = newWinnerElo;
@@ -192,6 +193,9 @@ const chooseFavorite = (winner: Motivator, loser: Motivator) => {
   selectedItems.value = pickTwoDistinctItems();
   saveGame();
 };
+
+// New duel cards have finished entering: accept the next pick.
+const onDuelSettled = () => { isAnimating.value = false; };
 
 // Persist the in-progress game so a refresh doesn't wipe 40-60 duels of work.
 function saveGame() {
@@ -348,7 +352,7 @@ const onCelebrationAction = () => {
     </header>
 
     <div class="page-content">
-      <Transition name="phase" mode="out-in">
+      <Transition name="phase" mode="out-in" @after-leave="onPhaseAfterLeave">
         <OnboardingIntro v-if="showOnboarding" key="onboarding" @start="startGame" />
         <ExportResults
           v-else-if="showExport"
@@ -367,7 +371,7 @@ const onCelebrationAction = () => {
 
         <!-- Item Display -->
         <main v-else key="arena" class="arena">
-          <Transition name="fade-scale" mode="out-in">
+          <Transition name="fade-scale" mode="out-in" @after-enter="onDuelSettled">
             <div class="fight-container" :key="matchCount">
               <MotivatorCard
                 :item="selectedItems[0]"
