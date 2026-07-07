@@ -136,8 +136,8 @@ const revealNext = () => {
 
 <style scoped>
 .reveal-page {
-  background: #ffffff;
-  border: 1px solid #e6e8f0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
   border-radius: 16px;
   padding: 28px;
 }
@@ -155,23 +155,23 @@ const revealNext = () => {
 }
 
 .reveal-name {
-  color: #B4552F;
+  color: var(--c-brand);
 }
 
 .reveal-close {
-  border: 1px solid #e6e8f0;
-  background: #ffffff;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: #667085;
+  color: var(--c-ink-muted);
   cursor: pointer;
 }
 
 .reveal-close:hover {
-  border-color: #B4552F;
-  color: #B4552F;
+  border-color: var(--c-brand);
+  color: var(--c-brand);
 }
 
 /* Frieze */
@@ -213,7 +213,7 @@ const revealNext = () => {
   text-align: center;
   font-size: 13px;
   font-weight: 800;
-  color: #5f6675;
+  color: var(--c-ink-3);
   margin-bottom: 6px;
 }
 
@@ -273,7 +273,7 @@ const revealNext = () => {
 .mini-card-content :deep(.card-description) {
   font-size: 12px;
   line-height: 1.45;
-  color: #5f6675;
+  color: var(--c-ink-3);
 }
 
 .frieze-slot .mini-card-wrap {
@@ -289,7 +289,7 @@ const revealNext = () => {
   margin-top: 8px;
   height: 6px;
   border-radius: 999px;
-  background: #eef0f6;
+  background: var(--c-surface-3);
   overflow: hidden;
 }
 
@@ -303,10 +303,10 @@ const revealNext = () => {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: #ffffff;
-  border: 2px dashed #d0d5e0;
+  background: var(--c-surface);
+  border: 2px dashed var(--c-dashed);
   border-radius: 16px;
-  color: #d0d5e0;
+  color: var(--c-dashed);
   font-size: 26px;
   font-weight: 800;
   display: flex;
@@ -361,8 +361,8 @@ const revealNext = () => {
   padding-top: 6px;
   font-size: 20px;
   font-weight: 800;
-  background: #eef0f6;
-  color: #98a2b3;
+  background: var(--c-surface-3);
+  color: var(--c-ink-faint);
   transition: height 0.5s cubic-bezier(0.34, 1.2, 0.64, 1), background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -384,9 +384,9 @@ const revealNext = () => {
   bottom: 16px;
   z-index: 2;
   margin: 28px auto 0;
-  background: #B4552F;
-  box-shadow: 0 4px 0 #8A3C1E;
-  color: #ffffff;
+  background: var(--c-brand);
+  box-shadow: 0 4px 0 var(--c-brand-deep);
+  color: var(--c-on-brand);
   border: none;
   border-radius: 10px;
   padding: 14px 28px;
@@ -402,7 +402,7 @@ const revealNext = () => {
 
 .reveal-next:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #8A3C1E;
+  box-shadow: 0 1px 0 var(--c-brand-deep);
 }
 
 .reveal-done {

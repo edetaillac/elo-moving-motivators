@@ -443,7 +443,7 @@ const onCelebrationAction = () => {
 .page-header p {
   margin: 0;
   font-size: 14px;
-  color: #5f6675;
+  color: var(--c-ink-3);
 }
 
 /* Arena */
@@ -471,9 +471,9 @@ const onCelebrationAction = () => {
   gap: 6px;
   padding: 5px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: rgba(255, 255, 255, 0.7);
-  color: #5f6675;
+  border: 1px solid var(--c-border-soft);
+  background: var(--c-glass);
+  color: var(--c-ink-3);
   font: inherit;
   font-size: 12px;
   font-weight: 700;
@@ -486,7 +486,7 @@ const onCelebrationAction = () => {
 }
 
 .reset-btn:hover {
-  color: #B4552F;
+  color: var(--c-brand);
   border-color: rgba(180, 85, 47, 0.4);
 }
 
@@ -496,14 +496,14 @@ const onCelebrationAction = () => {
   gap: 6px;
   padding: 4px 6px 4px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--c-glass);
+  border: 1px solid var(--c-border-soft);
 }
 
 .reset-confirm-label {
   font-size: 12px;
   font-weight: 700;
-  color: #475467;
+  color: var(--c-ink-2);
 }
 
 .reset-yes,
@@ -519,21 +519,21 @@ const onCelebrationAction = () => {
 }
 
 .reset-yes {
-  background: #B4552F;
-  color: #ffffff;
+  background: var(--c-brand);
+  color: var(--c-on-brand);
 }
 
 .reset-yes:hover {
-  background: #8A3C1E;
+  background: var(--c-brand-deep);
 }
 
 .reset-no {
-  background: #eef0f6;
-  color: #667085;
+  background: var(--c-surface-3);
+  color: var(--c-ink-muted);
 }
 
 .reset-no:hover {
-  color: #1a1c29;
+  color: var(--c-ink);
 }
 
 /* Merged indicator: duels played + progress bar toward unlocking the ranking. */
@@ -543,14 +543,14 @@ const onCelebrationAction = () => {
   gap: 10px;
   padding: 7px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--c-glass);
+  border: 1px solid var(--c-border-faint);
 }
 
 .progress-pill-count {
   font-size: 12px;
   font-weight: 800;
-  color: #1a1c29;
+  color: var(--c-ink);
   white-space: nowrap;
 }
 
@@ -558,34 +558,34 @@ const onCelebrationAction = () => {
   width: 84px;
   height: 7px;
   border-radius: 999px;
-  background: #e6e8f0;
+  background: var(--c-border);
   overflow: hidden;
 }
 
 .progress-pill-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #D98A5E, #B4552F);
+  background: linear-gradient(90deg, var(--c-brand-soft), var(--c-brand));
   transition: width 0.4s ease;
 }
 
 .progress-pill-goal {
   font-size: 12px;
   font-weight: 700;
-  color: #667085;
+  color: var(--c-ink-muted);
   white-space: nowrap;
 }
 
 /* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
 .reveal-trigger {
   border: none;
-  background: #B4552F;
-  box-shadow: 0 4px 0 #8A3C1E;
+  background: var(--c-brand);
+  box-shadow: 0 4px 0 var(--c-brand-deep);
   border-radius: 10px;
   padding: 10px 18px;
   font-size: 13px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--c-on-brand);
   cursor: pointer;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
@@ -596,7 +596,7 @@ const onCelebrationAction = () => {
 
 .reveal-trigger:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #8A3C1E;
+  box-shadow: 0 1px 0 var(--c-brand-deep);
 }
 
 .fight-container {
@@ -615,8 +615,8 @@ const onCelebrationAction = () => {
   height: 56px;
   border-radius: 50%;
   background: linear-gradient(155deg, #2a2d3e, #14151f);
-  box-shadow: 0 0 0 5px #f0f1f8, 0 0 0 6px rgba(180, 85, 47, 0.25), 0 8px 16px rgba(20, 21, 31, 0.25);
-  color: #ffffff;
+  box-shadow: 0 0 0 5px var(--c-bg), 0 0 0 6px rgba(180, 85, 47, 0.25), 0 8px 16px rgba(20, 21, 31, 0.25);
+  color: var(--c-on-brand);
   font-size: 15px;
   font-weight: 700;
   display: flex;
@@ -628,7 +628,7 @@ const onCelebrationAction = () => {
   margin: 20px 0 0;
   text-align: center;
   font-size: 12px;
-  color: #5f6675;
+  color: var(--c-ink-3);
 }
 
 .fade-scale-enter-active,
@@ -679,7 +679,7 @@ const onCelebrationAction = () => {
 .page-footer {
   margin-top: 56px;
   padding-top: 16px;
-  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  border-top: 1px solid var(--c-border-faint);
   text-align: center;
 }
 
@@ -689,14 +689,14 @@ const onCelebrationAction = () => {
   font: inherit;
   font-size: 11px;
   font-weight: 600;
-  color: #5f6675;
+  color: var(--c-ink-3);
   cursor: pointer;
   padding: 4px 10px;
   transition: color 0.15s ease;
 }
 
 .footer-link:hover {
-  color: #B4552F;
+  color: var(--c-brand);
 }
 
 .history-list {
@@ -719,7 +719,7 @@ const onCelebrationAction = () => {
   font-size: 13px;
   padding: 6px 8px;
   border-radius: 8px;
-  background: #f9fafc;
+  background: var(--c-surface-2);
 }
 
 .history-winner {
@@ -727,7 +727,7 @@ const onCelebrationAction = () => {
 }
 
 .history-loser {
-  color: #5f6675;
+  color: var(--c-ink-3);
   text-decoration: line-through;
 }
 

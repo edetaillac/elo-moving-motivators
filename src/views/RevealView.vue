@@ -94,8 +94,8 @@ const reset = () => {
   position: relative;
   max-width: 520px;
   margin: 0 auto;
-  background: #ffffff;
-  border: 1px solid #e6e8f0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
   border-radius: 16px;
   padding: 40px 32px;
   text-align: center;
@@ -118,34 +118,34 @@ const reset = () => {
   margin: 0 0 22px;
   font-size: 14px;
   line-height: 1.6;
-  color: #667085;
+  color: var(--c-ink-muted);
 }
 
 .uploader-code {
   width: 100%;
-  border: 1px solid #e6e8f0;
+  border: 1px solid var(--c-border);
   border-radius: 10px;
   padding: 12px 14px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
   line-height: 1.5;
-  color: #1a1c29;
-  background: #f9fafc;
+  color: var(--c-ink);
+  background: var(--c-surface-2);
   resize: none;
   word-break: break-all;
 }
 
 .uploader-code:focus {
   outline: none;
-  border-color: #B4552F;
-  box-shadow: 0 0 0 3px rgba(180, 85, 47, 0.15);
+  border-color: var(--c-brand);
+  box-shadow: 0 0 0 3px var(--c-focus-ring);
 }
 
 .uploader-error {
   margin: 10px 0 0;
   font-size: 12px;
   font-weight: 600;
-  color: #b91c1c;
+  color: var(--c-danger);
 }
 
 .uploader-actions {
@@ -159,9 +159,9 @@ const reset = () => {
 /* Chunky, Duolingo-style "pressable" button. */
 .uploader-primary {
   border: none;
-  background: #B4552F;
-  box-shadow: 0 4px 0 #8A3C1E;
-  color: #ffffff;
+  background: var(--c-brand);
+  box-shadow: 0 4px 0 var(--c-brand-deep);
+  color: var(--c-on-brand);
   border-radius: 10px;
   padding: 14px 26px;
   font-size: 14px;
@@ -176,30 +176,30 @@ const reset = () => {
 
 .uploader-primary:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #8A3C1E;
+  box-shadow: 0 1px 0 var(--c-brand-deep);
 }
 
 .uploader-primary:disabled {
-  background: #c7cad6;
-  box-shadow: 0 4px 0 #a9adbd;
+  background: var(--c-disabled-bg);
+  box-shadow: 0 4px 0 var(--c-disabled-edge);
   cursor: not-allowed;
 }
 
 .uploader-file {
-  border: 1px solid #e6e8f0;
-  background: #ffffff;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
   border-radius: 10px;
   padding: 14px 20px;
   font-size: 14px;
   font-weight: 700;
-  color: #667085;
+  color: var(--c-ink-muted);
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .uploader-file:hover {
-  border-color: #B4552F;
-  color: #B4552F;
+  border-color: var(--c-brand);
+  color: var(--c-brand);
 }
 
 /* Mobile only — desktop layout above is untouched. */

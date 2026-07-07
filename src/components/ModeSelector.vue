@@ -70,8 +70,8 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
   display: inline-flex;
   padding: 4px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--c-glass);
+  border: 1px solid var(--c-border-soft);
 }
 
 .mode-option {
@@ -84,22 +84,22 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
   font: inherit;
   font-size: 13px;
   font-weight: 800;
-  color: #667085;
+  color: var(--c-ink-muted);
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .mode-option:hover {
-  color: #1a1c29;
+  color: var(--c-ink);
 }
 
 .mode-option.active {
-  background: #B4552F;
-  color: #ffffff;
+  background: var(--c-brand);
+  color: var(--c-on-brand);
 }
 
 .mode-option:focus-visible {
-  outline: 2px solid #B4552F;
+  outline: 2px solid var(--c-brand);
   outline-offset: 2px;
 }
 
@@ -111,7 +111,7 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
   min-height: 2.6em;
   font-size: 12px;
   line-height: 1.3;
-  color: #667085;
+  color: var(--c-ink-muted);
   text-align: center;
   opacity: 0;
   transition: opacity 0.15s ease;

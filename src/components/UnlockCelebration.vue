@@ -57,7 +57,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
   position: relative;
   max-width: 420px;
   width: 100%;
-  background: #ffffff;
+  background: var(--c-surface);
   border-radius: 20px;
   padding: 36px 32px;
   text-align: center;
@@ -106,7 +106,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
   margin: 0 0 26px;
   font-size: 13px;
   line-height: 1.6;
-  color: #667085;
+  color: var(--c-ink-muted);
 }
 
 .celebration-actions {
@@ -118,9 +118,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 /* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
 .celebration-primary {
   border: none;
-  background: #B4552F;
-  box-shadow: 0 4px 0 #8A3C1E;
-  color: #ffffff;
+  background: var(--c-brand);
+  box-shadow: 0 4px 0 var(--c-brand-deep);
+  color: var(--c-on-brand);
   border-radius: 10px;
   padding: 14px 20px;
   font-size: 14px;
@@ -135,7 +135,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 
 .celebration-primary:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #8A3C1E;
+  box-shadow: 0 1px 0 var(--c-brand-deep);
 }
 
 /* The button is focused on open for a11y. Hide the default ring on
@@ -147,13 +147,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 
 .celebration-primary:focus-visible {
   outline: none;
-  box-shadow: 0 4px 0 #8A3C1E, 0 0 0 3px rgba(180, 85, 47, 0.45);
+  box-shadow: 0 4px 0 var(--c-brand-deep), 0 0 0 3px rgba(180, 85, 47, 0.45);
 }
 
 .celebration-secondary {
   border: none;
   background: none;
-  color: #5f6675;
+  color: var(--c-ink-3);
   font-size: 12px;
   font-weight: 600;
   padding: 6px;
@@ -162,6 +162,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 }
 
 .celebration-secondary:hover {
-  color: #B4552F;
+  color: var(--c-brand);
 }
 </style>

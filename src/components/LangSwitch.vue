@@ -37,9 +37,9 @@ import { locale, setLocale } from '@/i18n';
   gap: 2px;
   padding: 3px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--c-glass-strong);
   backdrop-filter: blur(6px);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--c-border-faint);
 }
 
 .lang-flag {
@@ -62,6 +62,6 @@ import { locale, setLocale } from '@/i18n';
 .lang-flag.active {
   opacity: 1;
   filter: none;
-  background: #eef0f6;
+  background: var(--c-surface-3);
 }
 </style>

@@ -66,8 +66,8 @@ const downloadCode = () => {
 .export {
   max-width: 520px;
   margin: 0 auto;
-  background: #ffffff;
-  border: 1px solid #e6e8f0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
   border-radius: 16px;
   padding: 36px 32px;
   text-align: center;
@@ -89,27 +89,27 @@ const downloadCode = () => {
   margin: 0 0 20px;
   font-size: 14px;
   line-height: 1.6;
-  color: #667085;
+  color: var(--c-ink-muted);
 }
 
 .export-code {
   width: 100%;
-  border: 1px solid #e6e8f0;
+  border: 1px solid var(--c-border);
   border-radius: 10px;
   padding: 12px 14px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
   line-height: 1.5;
-  color: #667085;
-  background: #f9fafc;
+  color: var(--c-ink-muted);
+  background: var(--c-surface-2);
   resize: none;
   word-break: break-all;
 }
 
 .export-code:focus {
   outline: none;
-  border-color: #B4552F;
-  box-shadow: 0 0 0 3px rgba(180, 85, 47, 0.15);
+  border-color: var(--c-brand);
+  box-shadow: 0 0 0 3px var(--c-focus-ring);
 }
 
 .export-actions {
@@ -122,9 +122,9 @@ const downloadCode = () => {
 /* Chunky, Duolingo-style "pressable" button. */
 .export-primary {
   border: none;
-  background: #B4552F;
-  box-shadow: 0 4px 0 #8A3C1E;
-  color: #ffffff;
+  background: var(--c-brand);
+  box-shadow: 0 4px 0 var(--c-brand-deep);
+  color: var(--c-on-brand);
   border-radius: 10px;
   padding: 12px 24px;
   font-size: 14px;
@@ -139,30 +139,30 @@ const downloadCode = () => {
 
 .export-primary:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #8A3C1E;
+  box-shadow: 0 1px 0 var(--c-brand-deep);
 }
 
 .export-secondary {
-  border: 1px solid #e6e8f0;
-  background: #ffffff;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
   border-radius: 10px;
   padding: 12px 20px;
   font-size: 14px;
   font-weight: 700;
-  color: #667085;
+  color: var(--c-ink-muted);
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .export-secondary:hover {
-  border-color: #B4552F;
-  color: #B4552F;
+  border-color: var(--c-brand);
+  color: var(--c-brand);
 }
 
 .export-hint {
   margin: 18px 0 0;
   font-size: 12px;
-  color: #98a2b3;
+  color: var(--c-ink-faint);
 }
 
 /* Mobile only — desktop layout above is untouched. */

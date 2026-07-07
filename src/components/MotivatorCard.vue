@@ -40,8 +40,8 @@ const isLightColor = computed(() => {
   display: flex;
   flex-direction: column;
   max-width: 440px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-faint);
   border-radius: 22px;
   overflow: hidden;
   padding: 0;
@@ -49,7 +49,7 @@ const isLightColor = computed(() => {
   font: inherit;
   color: inherit;
   text-align: center;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px var(--c-border-faint);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -59,7 +59,7 @@ const isLightColor = computed(() => {
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.05),
     0 18px 30px -8px color-mix(in srgb, var(--accent) 45%, transparent),
-    0 4px 10px rgba(15, 23, 42, 0.06);
+    0 4px 10px var(--c-border-faint);
   outline: none;
 }
 
@@ -70,7 +70,7 @@ const isLightColor = computed(() => {
 .card-banner {
   width: 100%;
   padding: 18px 16px;
-  color: #ffffff;
+  color: var(--c-on-brand);
   font-weight: 800;
   font-size: 20px;
   text-transform: uppercase;
@@ -108,6 +108,6 @@ const isLightColor = computed(() => {
   margin: 0;
   font-size: 15px;
   line-height: 1.6;
-  color: #475467;
+  color: var(--c-ink-2);
 }
 </style>
