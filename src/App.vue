@@ -29,7 +29,7 @@ import LangSwitch from '@/components/LangSwitch.vue';
   --c-ink-2: #475467;
   --c-ink-3: #5f6675;
   --c-ink-muted: #667085;
-  --c-ink-faint: #98a2b3;
+  --c-ink-faint: #6d7482;   /* AA 4.5:1 on light surfaces (was #98a2b3, ~2.6:1) */
   --c-ink-placeholder: #b0b5c2;
 
   /* Surfaces & backgrounds */
@@ -62,7 +62,7 @@ import LangSwitch from '@/components/LangSwitch.vue';
     --c-ink-2: #c3c8d4;
     --c-ink-3: #a6acbb;
     --c-ink-muted: #8b93a4;
-    --c-ink-faint: #6b7385;
+    --c-ink-faint: #868da0;   /* AA 4.5:1 on dark surfaces */
     --c-ink-placeholder: #5a6274;
 
     --c-bg: #14151f;
