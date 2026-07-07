@@ -5,22 +5,49 @@ import { t } from '@/i18n';
 defineProps<{ name?: string; manager?: boolean }>();
 const emit = defineEmits<{ (e: 'action'): void; (e: 'close'): void }>();
 
-// Basic dialog a11y: focus the primary action on open, close on Escape.
+// Dialog a11y: focus the primary action on open, close on Escape, trap Tab
+// inside the dialog, and hand focus back to wherever it was on close.
 const primaryBtn = ref<HTMLButtonElement | null>(null);
+const card = ref<HTMLElement | null>(null);
+let previouslyFocused: HTMLElement | null = null;
+
 const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') emit('close');
+  if (e.key === 'Escape') {
+    emit('close');
+    return;
+  }
+  if (e.key !== 'Tab' || !card.value) return;
+  const focusable = card.value.querySelectorAll<HTMLElement>(
+    'button, [href], input, [tabindex]:not([tabindex="-1"])'
+  );
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
 };
+
 onMounted(() => {
+  previouslyFocused = document.activeElement as HTMLElement | null;
   primaryBtn.value?.focus();
   window.addEventListener('keydown', onKeydown);
 });
-onUnmounted(() => window.removeEventListener('keydown', onKeydown));
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown);
+  previouslyFocused?.focus?.();
+});
 </script>
 
 <template>
   <div class="celebration-backdrop" @click.self="$emit('close')">
 
     <div
+      ref="card"
       class="celebration-card"
       role="dialog"
       aria-modal="true"

@@ -64,7 +64,7 @@ const reset = () => {
         @input="error = ''"
       />
 
-      <p v-if="error" class="uploader-error">{{ error }}</p>
+      <p v-if="error" class="uploader-error" role="alert">{{ error }}</p>
 
       <div class="uploader-actions">
         <button class="uploader-primary" type="button" :disabled="!codeInput.trim()" @click="loadCode">
