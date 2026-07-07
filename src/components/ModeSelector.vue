@@ -27,7 +27,9 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
 
 <template>
   <div class="mode-selector" :class="{ hovering: hovered !== null }">
-    <div class="mode-capsule" role="group" :aria-label="t('onboarding.mode.label')">
+    <div class="mode-row">
+      <span class="mode-label">{{ t('onboarding.mode.prefix') }}</span>
+      <div class="mode-capsule" role="group" :aria-label="t('onboarding.mode.label')">
       <button
         type="button"
         class="mode-option"
@@ -50,6 +52,7 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
         @focus="hovered = 'manager'"
         @blur="hovered = null"
       >{{ t('onboarding.mode.manager') }}</button>
+      </div>
     </div>
     <p class="mode-help" aria-live="polite">{{ helpText }}</p>
   </div>
@@ -61,7 +64,24 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin-top: 14px;
+  /* Sits at the very top of the onboarding card, with breathing room before
+     the illustration below. */
+  margin: 0 0 16px;
+}
+
+/* "Mode :" label sitting to the left of the capsule, so the toggle reads as a
+   labelled choice, not two orphan buttons. */
+.mode-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mode-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-ink-muted);
+  white-space: nowrap;
 }
 
 /* Segmented pill, same visual language as the progress-pill that appears in
@@ -103,8 +123,8 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
   outline-offset: 2px;
 }
 
-/* Help line: hidden by default, height reserved so nothing jumps when it
-   fades in on hover/focus. Two lines' worth for the longer (Manager) text. */
+/* Help line: hidden by default, height reserved so nothing jumps when it fades
+   in on hover/focus. Two lines' worth for the longer (Manager) text. */
 .mode-help {
   margin: 0;
   max-width: 320px;

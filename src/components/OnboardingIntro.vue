@@ -2,8 +2,12 @@
 import { computed, ref } from 'vue';
 import { MOTIVATORS } from '@/store';
 import { t } from '@/i18n';
+import ModeSelector, { Mode } from '@/components/ModeSelector.vue';
 
-const emit = defineEmits<{ (e: 'start', name: string): void }>();
+defineProps<{ mode: Mode }>();
+const emit = defineEmits<{ (e: 'start', name: string): void; (e: 'update:mode', value: Mode): void }>();
+
+const onModeChange = (value: Mode) => emit('update:mode', value);
 
 const name = ref('');
 const canStart = computed(() => name.value.trim().length > 0);
@@ -36,6 +40,8 @@ const deck = DECK_IDS.map((id, i) => {
 
 <template>
   <div class="onboarding">
+    <ModeSelector class="onboarding-mode" :model-value="mode" @update:model-value="onModeChange" />
+
     <div class="deck" aria-hidden="true">
       <div
         v-for="card in deck"

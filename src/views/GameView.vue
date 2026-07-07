@@ -5,7 +5,7 @@ import { state, Motivator } from '@/store';
 import { updateElo } from '@/elo';
 import MotivatorCard from '@/components/MotivatorCard.vue';
 import OnboardingIntro from '@/components/OnboardingIntro.vue';
-import ModeSelector, { Mode } from '@/components/ModeSelector.vue';
+import { Mode } from '@/components/ModeSelector.vue';
 import UnlockCelebration from '@/components/UnlockCelebration.vue';
 import ExportResults from '@/components/ExportResults.vue';
 import ResultsReveal from '@/components/ResultsReveal.vue';
@@ -319,9 +319,6 @@ const onCelebrationAction = () => {
            results/export screens, which carry their own title. -->
       <p v-else-if="!showReveal && !showExport">{{ t('header.subtitle.duel') }}</p>
 
-      <!-- Mode picker: onboarding only, same spot the progress pill takes over. -->
-      <ModeSelector v-if="showOnboarding" v-model="mode" />
-
       <div v-if="headerReady && !showExport && !showReveal" class="header-progress">
         <!-- Header stays pure status: duels played + progress, then a "unlocked"
              state once the ranking opens. The action to see the ranking lives at
@@ -361,7 +358,7 @@ const onCelebrationAction = () => {
 
     <div class="page-content">
       <Transition name="phase" mode="out-in" @after-leave="onPhaseAfterLeave">
-        <OnboardingIntro v-if="showOnboarding" key="onboarding" @start="startGame" />
+        <OnboardingIntro v-if="showOnboarding" key="onboarding" v-model:mode="mode" @start="startGame" />
         <ExportResults
           v-else-if="showExport"
           key="export"
