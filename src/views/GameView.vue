@@ -38,8 +38,12 @@ const startGame = (name: string) => {
   saveGame();
 };
 
-// The onboarding card has left the stage: safe to show the header now.
-const onPhaseAfterLeave = () => { headerReady.value = true; };
+// A phase finished leaving. Reveal the header only once we've landed OUT of
+// onboarding (game started / continued), never when a reset sends us back to
+// onboarding, otherwise the duel header shows over the onboarding card.
+const onPhaseAfterLeave = () => {
+  if (!showOnboarding.value) headerReady.value = true;
+};
 
 // Pairs already played this cycle, keyed by sorted ids. Prevents re-proposing a
 // duel until every unique pair has been seen; then a fresh cycle starts.
