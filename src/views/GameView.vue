@@ -2,7 +2,6 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { state, Motivator } from '@/store';
-import { updateElo } from '@/elo';
 import MotivatorCard from '@/components/MotivatorCard.vue';
 import OnboardingIntro from '@/components/OnboardingIntro.vue';
 import { Mode } from '@/components/ModeSelector.vue';
@@ -10,280 +9,69 @@ import UnlockCelebration from '@/components/UnlockCelebration.vue';
 import ExportResults from '@/components/ExportResults.vue';
 import ResultsReveal from '@/components/ResultsReveal.vue';
 import { t, mName } from '@/i18n';
+import { useMotivatorGame } from '@/composables/useMotivatorGame';
 
-// Mode is chosen on the onboarding screen via the capsule, pre-selected from
-// the ?mode=manager param on a shared link (default = solo), then frozen once
-// the game starts (the capsule only lives on onboarding). isManager stays a
-// computed so every downstream consumer is unchanged.
-const route = useRoute();
-const mode = ref<Mode>(route.query.mode === 'manager' ? 'manager' : 'solo');
-const isManager = computed(() => mode.value === 'manager');
-
-const showOnboarding = ref(true);
+// Pure UI phase state, owned by the view. The game model, pairing and
+// persistence live in the composable.
 const showCelebration = ref(false);
 const showExport = ref(false);
 const showReveal = ref(false);
-const playerName = ref('');
+const showHistory = ref(false);
+const confirmReset = ref(false);
 // Held back until the onboarding card has actually finished leaving, so the game
-// header (duel count + progress) doesn't briefly coexist with the onboarding
-// card during the phase switch. Flipped by the phase transition's @after-leave,
-// not a guessed timeout that has to match the CSS duration.
+// header doesn't briefly coexist with the onboarding card during the phase
+// switch. Flipped by the phase transition's @after-leave.
 const headerReady = ref(false);
 
-const SAVE_KEY = 'mm.save.v1';
+// Mode is pre-selected from the ?mode=manager param on a shared link (default
+// solo); the game locks it in once started.
+const route = useRoute();
+const defaultMode: Mode = route.query.mode === 'manager' ? 'manager' : 'solo';
 
-const startGame = (name: string) => {
-  playerName.value = name;
-  showOnboarding.value = false;
-  saveGame();
-};
+const {
+  playerName,
+  mode,
+  started,
+  selectedItems,
+  matchHistory,
+  matchCount,
+  rankingUnlocked,
+  rankedItems,
+  reliabilityPercent,
+  startGame,
+  chooseFavorite,
+  settleDuel,
+  restore,
+  reset,
+} = useMotivatorGame({ defaultMode, onUnlock: () => { showCelebration.value = true; } });
+
+const isManager = computed(() => mode.value === 'manager');
+// Onboarding is simply "the game hasn't started": single source of truth is the
+// model's `started`, no separate flag to keep in sync.
+const showOnboarding = computed(() => !started.value);
+
+const itemById = (id: number) => state.items.find((m) => m.id === id) as Motivator;
 
 // A phase finished leaving. Reveal the header only once we've landed OUT of
-// onboarding (game started / continued), never when a reset sends us back to
-// onboarding, otherwise the duel header shows over the onboarding card.
+// onboarding, never when a reset sends us back to it, otherwise the duel header
+// would show over the onboarding card.
 const onPhaseAfterLeave = () => {
   if (!showOnboarding.value) headerReady.value = true;
 };
 
-// Pairs already played this cycle, keyed by sorted ids. Prevents re-proposing a
-// duel until every unique pair has been seen; then a fresh cycle starts.
-const playedPairs = ref<Set<string>>(new Set());
-const TOTAL_PAIRS = (state.items.length * (state.items.length - 1)) / 2;
-const pairKey = (a: Motivator, b: Motivator): string =>
-  a.id < b.id ? `${a.id}-${b.id}` : `${b.id}-${a.id}`;
-
-const pickTwoDistinctItems = (): Motivator[] => {
-  // Every unique pair seen → start a new cycle.
-  if (playedPairs.value.size >= TOTAL_PAIRS) {
-    playedPairs.value.clear();
-  }
-
-  const pickFunction = Math.random() < 0.6 ? weightedRandomItem : randomItem; // 3/5 chance for weighted
-
-  // Try weighted/random picks first, rejecting pairs already played this cycle.
-  for (let attempt = 0; attempt < 40; attempt++) {
-    const firstItem = pickFunction();
-    let secondItem = pickFunction();
-    while (secondItem === firstItem) {
-      secondItem = pickFunction();
-    }
-    if (!playedPairs.value.has(pairKey(firstItem, secondItem))) {
-      return [firstItem, secondItem];
-    }
-  }
-
-  // Fallback when few pairs remain: pick uniformly among the unplayed ones.
-  const remaining: Motivator[][] = [];
-  for (let i = 0; i < state.items.length; i++) {
-    for (let j = i + 1; j < state.items.length; j++) {
-      if (!playedPairs.value.has(pairKey(state.items[i], state.items[j]))) {
-        remaining.push([state.items[i], state.items[j]]);
-      }
-    }
-  }
-  return remaining[Math.floor(Math.random() * remaining.length)];
-}
-
-function randomItem(): Motivator {
-  const randomIndex = Math.floor(Math.random() * state.items.length);
-  return state.items[randomIndex];
-}
-
-function weightedRandomItem(): Motivator {
-  // Calculate the total weight (i.e., sum of 'shownCount's)
-  const totalWeight = state.items.reduce((acc, item) => acc + (1 / (item.shownCount + 1)), 0);
-
-  // Generate a random number between 0 and the total weight
-  let randomNum = Math.random() * totalWeight;
-
-  // Find which item this random number corresponds to
-  for (const item of state.items) {
-    const itemWeight = 1 / (item.shownCount + 1);
-    if (randomNum < itemWeight) {
-      return item;
-    }
-    randomNum -= itemWeight;
-  }
-
-  // Fallback to return the last item if for some reason the loop doesn't catch it
-  return state.items[state.items.length - 1];
-}
-
-const selectedItems = ref<Motivator[]>(pickTwoDistinctItems());
-// Blocks new picks while the card transition (fade-scale) is still running.
-// Firing chooseFavorite again before it settles can leave the transition's
-// enter classes stuck, making the cards invisible. Released by the transition's
-// own @after-enter (see onDuelSettled), not a timeout guessed to match the CSS.
-const isAnimating = ref(false);
-// Store ids, not live Motivator refs: the elo of a referenced item keeps
-// mutating after the duel, and ids serialize cleanly for persistence.
-const matchHistory = ref<{ winnerId: number; loserId: number }[]>([]);
-const matchCount = ref(0);
-const showHistory = ref(false);
-const confirmReset = ref(false);
-
-const itemById = (id: number) => state.items.find((m) => m.id === id) as Motivator;
-
-// Ranking reliability: hidden until every item has enough duels behind it
-// AND the top of the ranking has stopped moving around.
-const MIN_SHOWN_PER_ITEM = 5;
-const STABILITY_WINDOW = 10;
-const TOP_N_FOR_STABILITY = 3;
-
-const stableStreak = ref(0);
-const rankingUnlocked = ref(false);
-
-const rankedItems = computed(() =>
-  [...state.items].sort((a, b) => b.elo - a.elo)
-);
-
-let previousTopGroup: number[] = [];
-
-const minShownCount = computed(() =>
-  Math.min(...state.items.map((item) => item.shownCount))
-);
-
-const exposureScore = computed(() =>
-  Math.min(1, minShownCount.value / MIN_SHOWN_PER_ITEM)
-);
-
-const stabilityScore = computed(() =>
-  Math.min(1, stableStreak.value / STABILITY_WINDOW)
-);
-
-const reliability = computed(() =>
-  Math.min(exposureScore.value, stabilityScore.value)
-);
-
-const reliabilityPercent = computed(() => Math.round(reliability.value * 100));
-
-const chooseFavorite = (winner: Motivator, loser: Motivator) => {
-  if (isAnimating.value) return;
-  // Locked here, released in onDuelSettled when the card transition has fully
-  // entered. The bumped matchCount below rekeys the <Transition>, so it always
-  // runs a leave+enter and @after-enter always fires to clear the lock.
-  isAnimating.value = true;
-
-  const [newWinnerElo, newLoserElo] = updateElo(winner.elo, loser.elo);
-  winner.elo = newWinnerElo;
-  loser.elo = newLoserElo;
-
-  // Update match history and count
-  matchHistory.value.unshift({ winnerId: winner.id, loserId: loser.id });
-  matchCount.value++;
-
-  // Increment shown count for both winner and loser
-  winner.shownCount++;
-  loser.shownCount++;
-
-  // Remember this pair so it isn't re-proposed until the cycle resets.
-  playedPairs.value.add(pairKey(winner, loser));
-
-  // Track how long the same trio has held the top spots, regardless of their
-  // internal order (near-tied items can keep swapping 1st/2nd without that
-  // counting as instability).
-  const topGroup = rankedItems.value.slice(0, TOP_N_FOR_STABILITY).map((item) => item.id);
-  const isSameGroup =
-    topGroup.length === previousTopGroup.length &&
-    topGroup.every((id) => previousTopGroup.includes(id));
-  stableStreak.value = isSameGroup ? stableStreak.value + 1 : 0;
-  previousTopGroup = topGroup;
-
-  if (!rankingUnlocked.value && reliability.value >= 1) {
-    rankingUnlocked.value = true;
-    showCelebration.value = true;
-  }
-
-  selectedItems.value = pickTwoDistinctItems();
-  saveGame();
-};
-
 // New duel cards have finished entering: accept the next pick.
-const onDuelSettled = () => { isAnimating.value = false; };
+const onDuelSettled = () => settleDuel();
 
-// Persist the in-progress game so a refresh doesn't wipe 40-60 duels of work.
-function saveGame() {
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: 1,
-      playerName: playerName.value,
-      mode: mode.value,
-      started: !showOnboarding.value,
-      matchCount: matchCount.value,
-      elos: Object.fromEntries(state.items.map((i) => [i.id, i.elo])),
-      shown: Object.fromEntries(state.items.map((i) => [i.id, i.shownCount])),
-      playedPairs: [...playedPairs.value],
-      stableStreak: stableStreak.value,
-      previousTopGroup,
-      rankingUnlocked: rankingUnlocked.value,
-      history: matchHistory.value,
-    }));
-  } catch {
-    // localStorage full or blocked: a lost save isn't worth crashing over.
-  }
-}
-
-// Restore a saved game on load. Returns silently (fresh game) if none/corrupt.
-function restoreGame() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return;
-    const p = JSON.parse(raw);
-    if (!p || p.v !== 1 || !p.started) return;
-    state.items.forEach((i) => {
-      if (typeof p.elos?.[i.id] === 'number') i.elo = p.elos[i.id];
-      if (typeof p.shown?.[i.id] === 'number') i.shownCount = p.shown[i.id];
-    });
-    playerName.value = p.playerName ?? '';
-    // Restore the chosen mode: an in-progress game has already locked it in,
-    // so it takes precedence over the URL param.
-    if (p.mode === 'manager' || p.mode === 'solo') mode.value = p.mode;
-    matchCount.value = p.matchCount ?? 0;
-    playedPairs.value = new Set(Array.isArray(p.playedPairs) ? p.playedPairs : []);
-    stableStreak.value = p.stableStreak ?? 0;
-    previousTopGroup = Array.isArray(p.previousTopGroup) ? p.previousTopGroup : [];
-    rankingUnlocked.value = !!p.rankingUnlocked;
-    matchHistory.value = Array.isArray(p.history) ? p.history : [];
-    showOnboarding.value = false;
-    headerReady.value = true;
-    selectedItems.value = pickTwoDistinctItems();
-  } catch {
-    // Corrupt save: fall back to a fresh game (onboarding stays visible).
-  }
-}
-
-// Wipe the saved game and start over from onboarding.
-function resetGame() {
-  try { localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ }
-  state.items.forEach((i) => { i.elo = 1000; i.shownCount = 0; });
-  playedPairs.value = new Set();
-  matchHistory.value = [];
-  matchCount.value = 0;
-  stableStreak.value = 0;
-  previousTopGroup = [];
-  rankingUnlocked.value = false;
+// Wipe the game and return to onboarding, clearing the view's UI phase too.
+const resetGame = () => {
+  reset();
   showCelebration.value = false;
   showExport.value = false;
   showReveal.value = false;
   showHistory.value = false;
   confirmReset.value = false;
-  playerName.value = '';
-  // Back to onboarding: re-default the mode from the URL so the capsule reflects
-  // how the game was opened.
-  mode.value = route.query.mode === 'manager' ? 'manager' : 'solo';
   headerReady.value = false;
-  showOnboarding.value = true;
-  selectedItems.value = pickTwoDistinctItems();
-}
-
-onMounted(() => {
-  restoreGame();
-  window.addEventListener('keydown', handleKeyDown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
-});
+};
 
 const handleKeyDown = (e: KeyboardEvent) => {
   if (showOnboarding.value || showExport.value || showReveal.value || showCelebration.value) return;
@@ -294,6 +82,17 @@ const handleKeyDown = (e: KeyboardEvent) => {
     chooseFavorite(selectedItems.value[1], selectedItems.value[0]);
   }
 };
+
+onMounted(() => {
+  // Restored game: skip onboarding and show the header right away, no wait for an
+  // onboarding leave transition that never happens.
+  if (restore()) headerReady.value = true;
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+});
 
 // Solo: reveal the ranking here. Manager: export a code to send instead.
 const openResult = () => {

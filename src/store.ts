@@ -15,6 +15,9 @@ export interface Motivator {
 
 export type MotivatorDefinition = Omit<Motivator, 'elo' | 'shownCount'>;
 
+// Play mode: solo reveals your own ranking, manager exports a code to share.
+export type Mode = 'solo' | 'manager';
+
 // Base motivator definitions. Shared between the game (reactive state below)
 // and the manager reveal page, which rebuilds a ranking from a decoded code.
 export const MOTIVATORS: MotivatorDefinition[] = [
