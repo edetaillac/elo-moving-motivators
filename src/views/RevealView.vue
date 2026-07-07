@@ -109,9 +109,10 @@ const reset = () => {
 
 .uploader h1 {
   margin: 0 0 12px;
-  font-size: 24px;
+  font-size: clamp(26px, 3.5vw, 34px);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
 }
 
 .uploader-lead {

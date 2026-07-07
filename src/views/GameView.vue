@@ -434,15 +434,19 @@ const onCelebrationAction = () => {
 }
 
 .page-header h1 {
-  margin: 0 0 6px;
-  font-size: 30px;
+  margin: 0 0 10px;
+  /* Display type: scales with the viewport, leans on the font's optical sizing.
+     Big + heavy title vs a small, quiet subtitle = deliberate weight/size jump. */
+  font-size: clamp(34px, 5.5vw, 48px);
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
 }
 
 .page-header p {
   margin: 0;
   font-size: 14px;
+  font-weight: 500;
   color: var(--c-ink-3);
 }
 

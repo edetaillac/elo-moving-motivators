@@ -98,8 +98,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 
 .celebration-card h2 {
   margin: 0 0 12px;
-  font-size: 21px;
-  letter-spacing: -0.01em;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
 }
 
 .celebration-card p {

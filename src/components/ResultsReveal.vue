@@ -71,7 +71,7 @@ const revealNext = () => {
           <div class="podium-block podium-block--2" :class="{ revealed: rank2Revealed }">2</div>
         </div>
 
-        <div class="podium-slot" style="animation-delay: 0.07s">
+        <div class="podium-slot podium-slot--first" :class="{ 'is-winner': rank1Revealed }" style="animation-delay: 0.07s">
           <span v-if="rank1Revealed" class="podium-crown">👑</span>
           <div class="mini-card-wrap">
             <div class="mini-card-content" :class="{ revealed: rank1Revealed }">
@@ -151,7 +151,9 @@ const revealNext = () => {
 
 .reveal-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: clamp(22px, 3.2vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .reveal-name {
@@ -345,10 +347,48 @@ const revealNext = () => {
   animation: reveal-appear 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
 }
 
+/* Winner emphasis: once #1 is revealed, its slot grows a touch and its card
+   picks up a gold glow, so the top spot reads as the top spot at a glance.
+   Scaling the wrap (not the card) avoids clashing with the card-pop keyframe. */
+.podium-slot--first {
+  position: relative;
+  z-index: 2;
+}
+
+.podium-slot--first .mini-card-wrap {
+  transition: height 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* Winner grows taller once revealed (tallest = the top spot). Height reflows
+   the column cleanly, unlike a scale transform that overlapped the crown above
+   and squashed the strength bar against the podium block below. */
+.podium-slot--first.is-winner .mini-card-wrap {
+  height: 352px;
+}
+
+.podium-slot--first.is-winner :deep(.card) {
+  box-shadow:
+    0 0 0 2px #fde68a,
+    0 18px 44px -10px rgba(253, 230, 138, 0.65),
+    0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
 .podium-crown {
-  font-size: 26px;
+  font-size: 34px;
   line-height: 1;
   margin-bottom: 6px;
+  filter: drop-shadow(0 3px 6px rgba(253, 230, 138, 0.6));
+  animation: crown-drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes crown-drop {
+  from { opacity: 0; transform: translateY(8px) scale(0.6) rotate(-12deg); }
+  to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .podium-slot--first .mini-card-wrap { transition: none; }
+  .podium-crown { animation: none; }
 }
 
 .podium-block {
@@ -458,6 +498,11 @@ const revealNext = () => {
   .frieze-slot .mini-card-wrap,
   .podium-slot .mini-card-wrap {
     height: 176px;
+  }
+
+  /* Keep the winner's extra height proportional on small screens. */
+  .podium-slot--first.is-winner .mini-card-wrap {
+    height: 196px;
   }
 
   .mini-card-content :deep(.card-banner) {
