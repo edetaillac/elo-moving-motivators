@@ -323,16 +323,18 @@ const onCelebrationAction = () => {
       <ModeSelector v-if="showOnboarding" v-model="mode" />
 
       <div v-if="headerReady && !showExport && !showReveal" class="header-progress">
-        <button v-if="rankingUnlocked" class="reveal-trigger" type="button" @click="openResult">
-          {{ isManager ? t('header.getCode') : t('header.seeRanking') }}
-        </button>
-        <!-- Single merged indicator: duels played + progress toward unlocking the ranking. -->
-        <div v-else class="progress-pill">
+        <!-- Header stays pure status: duels played + progress, then a "unlocked"
+             state once the ranking opens. The action to see the ranking lives at
+             the bottom of the arena, where the flow ends. -->
+        <div class="progress-pill">
           <span class="progress-pill-count">⚔️ {{ t('header.duels', { n: matchCount, s: matchCount === 1 ? '' : 's' }) }}</span>
-          <div class="progress-pill-track">
-            <div class="progress-pill-fill" :style="{ width: reliabilityPercent + '%' }" />
-          </div>
-          <span class="progress-pill-goal">{{ t('header.progress', { p: reliabilityPercent }) }}</span>
+          <template v-if="!rankingUnlocked">
+            <div class="progress-pill-track">
+              <div class="progress-pill-fill" :style="{ width: reliabilityPercent + '%' }" />
+            </div>
+            <span class="progress-pill-goal">{{ t('header.progress', { p: reliabilityPercent }) }}</span>
+          </template>
+          <span v-else class="progress-pill-done">{{ t('header.unlocked') }}</span>
         </div>
 
         <!-- Restart, stacked under the duel count: findable, and stacks cleanly on mobile.
@@ -391,6 +393,16 @@ const onCelebrationAction = () => {
             </div>
           </Transition>
           <p class="hint">{{ t('arena.hint') }}</p>
+          <!-- Ranking CTA at the end of the flow, once unlocked: the natural
+               place to leave the duel loop, not up in the status header. -->
+          <button
+            v-if="rankingUnlocked"
+            class="reveal-trigger arena-reveal"
+            type="button"
+            @click="openResult"
+          >
+            {{ isManager ? t('header.getCode') : t('header.seeRanking') }}
+          </button>
         </main>
       </Transition>
     </div>
@@ -588,6 +600,22 @@ const onCelebrationAction = () => {
   font-weight: 700;
   color: var(--c-ink-muted);
   white-space: nowrap;
+}
+
+/* Unlocked state in the status pill: no more progress bar, just the good news. */
+.progress-pill-done {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--c-brand);
+  white-space: nowrap;
+}
+
+/* Ranking CTA sitting at the bottom of the arena. A touch bigger than its old
+   header incarnation since it's now the standout action of the screen. */
+.arena-reveal {
+  margin-top: 4px;
+  padding: 12px 24px;
+  font-size: 14px;
 }
 
 /* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
