@@ -57,6 +57,7 @@ const revealNext = () => {
 
       <div class="podium">
         <div class="podium-slot" style="animation-delay: 0s">
+          <div class="podium-rank">2</div>
           <div class="mini-card-wrap">
             <div class="mini-card-content" :class="{ revealed: rank2Revealed }">
               <MotivatorCard :item="items[1]" />
@@ -68,11 +69,14 @@ const revealNext = () => {
               </Transition>
             </div>
           </div>
-          <div class="podium-block podium-block--2" :class="{ revealed: rank2Revealed }">2</div>
+          <div class="podium-block podium-block--2" :class="{ revealed: rank2Revealed }" aria-hidden="true" />
         </div>
 
         <div class="podium-slot podium-slot--first" :class="{ 'is-winner': rank1Revealed }" style="animation-delay: 0.07s">
-          <span v-if="rank1Revealed" class="podium-crown">👑</span>
+          <div class="podium-rank">
+            <span v-if="rank1Revealed" class="podium-crown">👑</span>
+            <span v-else>1</span>
+          </div>
           <div class="mini-card-wrap">
             <div class="mini-card-content" :class="{ revealed: rank1Revealed }">
               <MotivatorCard :item="items[0]" />
@@ -84,10 +88,11 @@ const revealNext = () => {
               </Transition>
             </div>
           </div>
-          <div class="podium-block podium-block--1" :class="{ revealed: rank1Revealed }">1</div>
+          <div class="podium-block podium-block--1" :class="{ revealed: rank1Revealed }" aria-hidden="true" />
         </div>
 
         <div class="podium-slot" style="animation-delay: 0.14s">
+          <div class="podium-rank">3</div>
           <div class="mini-card-wrap">
             <div class="mini-card-content" :class="{ revealed: rank3Revealed }">
               <MotivatorCard :item="items[2]" />
@@ -99,7 +104,7 @@ const revealNext = () => {
               </Transition>
             </div>
           </div>
-          <div class="podium-block podium-block--3" :class="{ revealed: rank3Revealed }">3</div>
+          <div class="podium-block podium-block--3" :class="{ revealed: rank3Revealed }" aria-hidden="true" />
         </div>
       </div>
     </div>
@@ -373,10 +378,23 @@ const revealNext = () => {
     0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
+/* Rank number above each podium card, matching the frieze headers. Fixed height
+   reserves room for the crown so the reveal doesn't shove the layout. */
+.podium-rank {
+  flex-shrink: 0;
+  height: 34px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--c-ink-faint);
+  margin-bottom: 6px;
+}
+
 .podium-crown {
   font-size: 34px;
   line-height: 1;
-  margin-bottom: 6px;
   filter: drop-shadow(0 3px 6px rgba(253, 230, 138, 0.6));
   animation: crown-drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -391,19 +409,15 @@ const revealNext = () => {
   .podium-crown { animation: none; }
 }
 
+/* Podium step: collapsed to nothing until its rank is revealed, so no grey
+   stubs sit under the masked cards beforehand. Grows into a colored step on
+   reveal (the number now lives in .podium-rank above the card). */
 .podium-block {
   width: 100%;
-  height: 24px;
+  height: 0;
   border-radius: 10px 10px 0 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 6px;
-  font-size: 20px;
-  font-weight: 800;
   background: var(--c-surface-3);
-  color: var(--c-ink-faint);
-  transition: height 0.5s cubic-bezier(0.34, 1.2, 0.64, 1), background-color 0.3s ease, color 0.3s ease;
+  transition: height 0.5s cubic-bezier(0.34, 1.2, 0.64, 1), background-color 0.3s ease;
 }
 
 .podium-block--1.revealed {
@@ -479,6 +493,11 @@ const revealNext = () => {
 
   .podium-crown {
     font-size: 20px;
+  }
+
+  .podium-rank {
+    height: 22px;
+    font-size: 12px;
   }
 
   .frieze {
