@@ -311,7 +311,9 @@ const onCelebrationAction = () => {
     <header class="page-header">
       <h1>Moving Motivators</h1>
       <p v-if="showOnboarding">{{ t('header.subtitle.onboarding') }}</p>
-      <p v-else>{{ t('header.subtitle.duel') }}</p>
+      <!-- The duel tagline only makes sense while dueling: drop it on the
+           results/export screens, which carry their own title. -->
+      <p v-else-if="!showReveal && !showExport">{{ t('header.subtitle.duel') }}</p>
 
       <!-- Mode picker: onboarding only, same spot the progress pill takes over. -->
       <ModeSelector v-if="showOnboarding" v-model="mode" />
