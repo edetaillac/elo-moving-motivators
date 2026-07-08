@@ -522,28 +522,21 @@ const onCelebrationAction = () => {
    The picked card pops and lifts, the other recedes (fade + shrink + desaturate),
    so the choice reads before the next duel. Skipped under reduced motion (the
    view commits the pick immediately instead, so animationend isn't relied on). */
+/* Winner: a static soft glow (blur, no spread) in the card's accent color, no
+   movement. Static, not a keyframe, so it doesn't reset-then-regrow the shadow
+   over the one already there on hover (that flicker read as a jolt at click).
+   The card's own box-shadow transition eases it in. */
 .arena .fight-container .card-won {
   z-index: 1;
-  animation: card-won 0.12s ease-out forwards;
+  box-shadow:
+    0 6px 26px 2px color-mix(in srgb, var(--accent) 32%, transparent),
+    0 0 14px color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
+/* Loser: gently dims and recedes. This animation's end triggers the commit
+   (see onConfirmEnd), so it must stay a keyframe animation. */
 .arena .fight-container .card-lost {
   animation: card-lost 0.12s ease-out forwards;
-}
-
-/* Winner: no movement (a jumping card is disorienting), just a glow in its own
-   accent color, like a stronger hover. Loser: gently dims and recedes. */
-@keyframes card-won {
-  0% {
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 10px 24px rgba(15, 23, 42, 0.06);
-  }
-  100% {
-    /* Soft diffuse glow (blur, no spread) in the card's accent color, not a
-       hard ring. Kept light. */
-    box-shadow:
-      0 6px 26px 2px color-mix(in srgb, var(--accent) 32%, transparent),
-      0 0 14px color-mix(in srgb, var(--accent) 26%, transparent);
-  }
 }
 
 @keyframes card-lost {

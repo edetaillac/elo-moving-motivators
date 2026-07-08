@@ -63,9 +63,9 @@ const isLightColor = computed(() => {
   outline: none;
 }
 
-.card:active {
-  transform: translateY(-2px) scale(0.99);
-}
+/* No press dip on the card: at duel time the mouse is hovering (card lifted),
+   so an :active translate made it jolt down on click. Choice feedback is the
+   accent halo + the other card receding, not card movement. */
 
 .card-banner {
   width: 100%;
