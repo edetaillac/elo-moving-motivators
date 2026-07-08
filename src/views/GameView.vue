@@ -8,6 +8,7 @@ import { Mode } from '@/components/ModeSelector.vue';
 import UnlockCelebration from '@/components/UnlockCelebration.vue';
 import ExportResults from '@/components/ExportResults.vue';
 import ResultsReveal from '@/components/ResultsReveal.vue';
+import LangSwitch from '@/components/LangSwitch.vue';
 import { t, mName } from '@/i18n';
 import { useMotivatorGame } from '@/composables/useMotivatorGame';
 
@@ -262,6 +263,10 @@ const onCelebrationAction = () => {
         @close="showCelebration = false"
       />
     </Transition>
+
+    <!-- Language switch only on onboarding: the player picks it before starting,
+         it would just sit over the duel and results otherwise. -->
+    <LangSwitch v-if="showOnboarding" />
   </div>
 </template>
 

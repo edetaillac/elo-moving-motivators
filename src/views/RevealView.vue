@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Motivator } from '@/store';
 import { decodeResults } from '@/results';
 import ResultsReveal from '@/components/ResultsReveal.vue';
+import LangSwitch from '@/components/LangSwitch.vue';
 import { t } from '@/i18n';
 
 const codeInput = ref('');
@@ -76,6 +77,10 @@ const reset = () => {
         </label>
       </div>
     </div>
+
+    <!-- Language switch on the landing only, so it's there for whoever opens the
+         reveal, but out of the way during the animated reveal itself. -->
+    <LangSwitch v-if="!revealItems" />
   </div>
 </template>
 

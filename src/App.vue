@@ -2,12 +2,12 @@
 // Thin shell: routing lives in router/index.ts.
 // - /        → GameView (play the duels, export a code)
 // - /reveal  → RevealView (manager loads a code and reveals the ranking)
-import LangSwitch from '@/components/LangSwitch.vue';
+// The language switch is rendered per-view (onboarding + reveal landing only),
+// so it doesn't sit over the duel and the results.
 </script>
 
 <template>
   <router-view />
-  <LangSwitch />
 </template>
 
 <style>
