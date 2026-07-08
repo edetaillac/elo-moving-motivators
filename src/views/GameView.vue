@@ -531,15 +531,24 @@ const onCelebrationAction = () => {
   animation: card-lost 0.12s ease-out forwards;
 }
 
+/* Winner: no movement (a jumping card is disorienting), just a glow in its own
+   accent color, like a stronger hover. Loser: gently dims and recedes. */
 @keyframes card-won {
-  0% { transform: translateY(0) scale(1); }
-  60% { transform: translateY(-6px) scale(1.05); }
-  100% { transform: translateY(-3px) scale(1.04); }
+  0% {
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 10px 24px rgba(15, 23, 42, 0.06);
+  }
+  100% {
+    /* Soft diffuse glow (blur, no spread) in the card's accent color, not a
+       hard ring. Kept light. */
+    box-shadow:
+      0 6px 26px 2px color-mix(in srgb, var(--accent) 32%, transparent),
+      0 0 14px color-mix(in srgb, var(--accent) 26%, transparent);
+  }
 }
 
 @keyframes card-lost {
   0% { opacity: 1; transform: scale(1); filter: saturate(1); }
-  100% { opacity: 0.45; transform: scale(0.93); filter: saturate(0.4); }
+  100% { opacity: 0.5; transform: scale(0.97); filter: saturate(0.45); }
 }
 
 /* Phase switch (onboarding ↔ duel ↔ export): slide + fade */
