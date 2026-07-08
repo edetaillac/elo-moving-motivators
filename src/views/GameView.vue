@@ -33,6 +33,7 @@ const {
   mode,
   started,
   selectedItems,
+  isAnimating,
   matchHistory,
   matchCount,
   rankingUnlocked,
@@ -73,13 +74,46 @@ const resetGame = () => {
   headerReady.value = false;
 };
 
+// Choice confirmation: the picked card pops and the other recedes for a short
+// beat before the pair swaps. Kept fast (it's paid 40-60 times) and skipped
+// under reduced motion. `confirmingSide` holds the winning card's index.
+const confirmingSide = ref<0 | 1 | null>(null);
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const commitPick = (winnerIdx: 0 | 1) => {
+  const winner = selectedItems.value[winnerIdx];
+  const loser = selectedItems.value[winnerIdx === 0 ? 1 : 0];
+  chooseFavorite(winner, loser);
+};
+
+const onPick = (winnerIdx: 0 | 1) => {
+  // Ignore input during the confirm beat or the card swap.
+  if (confirmingSide.value !== null || isAnimating.value) return;
+  if (prefersReducedMotion()) {
+    commitPick(winnerIdx);
+    return;
+  }
+  confirmingSide.value = winnerIdx;
+};
+
+// The confirm animation on the picked card ended: commit the duel and swap.
+const onConfirmEnd = () => {
+  if (confirmingSide.value === null) return;
+  const winnerIdx = confirmingSide.value;
+  confirmingSide.value = null;
+  commitPick(winnerIdx);
+};
+
 const handleKeyDown = (e: KeyboardEvent) => {
   if (showOnboarding.value || showExport.value || showReveal.value || showCelebration.value) return;
 
   if (e.code === 'ArrowLeft') {
-    chooseFavorite(selectedItems.value[0], selectedItems.value[1]);
+    onPick(0);
   } else if (e.code === 'ArrowRight') {
-    chooseFavorite(selectedItems.value[1], selectedItems.value[0]);
+    onPick(1);
   }
 };
 
@@ -179,12 +213,16 @@ const onCelebrationAction = () => {
             <div class="fight-container" :key="matchCount">
               <MotivatorCard
                 :item="selectedItems[0]"
-                @choose="chooseFavorite(selectedItems[0], selectedItems[1])"
+                :class="{ 'card-won': confirmingSide === 0, 'card-lost': confirmingSide === 1 }"
+                @choose="onPick(0)"
+                @animationend="onConfirmEnd"
               />
               <div class="vs-badge">VS</div>
               <MotivatorCard
                 :item="selectedItems[1]"
-                @choose="chooseFavorite(selectedItems[1], selectedItems[0])"
+                :class="{ 'card-won': confirmingSide === 1, 'card-lost': confirmingSide === 0 }"
+                @choose="onPick(1)"
+                @animationend="onConfirmEnd"
               />
             </div>
           </Transition>
@@ -478,6 +516,30 @@ const onCelebrationAction = () => {
 .fade-scale-leave-to {
   opacity: 0;
   transform: scale(0.97);
+}
+
+/* Choice confirmation: a short beat on the chosen pair before it swaps out.
+   The picked card pops and lifts, the other recedes (fade + shrink + desaturate),
+   so the choice reads before the next duel. Skipped under reduced motion (the
+   view commits the pick immediately instead, so animationend isn't relied on). */
+.arena .fight-container .card-won {
+  z-index: 1;
+  animation: card-won 0.15s ease-out forwards;
+}
+
+.arena .fight-container .card-lost {
+  animation: card-lost 0.15s ease-out forwards;
+}
+
+@keyframes card-won {
+  0% { transform: translateY(0) scale(1); }
+  60% { transform: translateY(-6px) scale(1.05); }
+  100% { transform: translateY(-3px) scale(1.04); }
+}
+
+@keyframes card-lost {
+  0% { opacity: 1; transform: scale(1); filter: saturate(1); }
+  100% { opacity: 0.45; transform: scale(0.93); filter: saturate(0.4); }
 }
 
 /* Phase switch (onboarding ↔ duel ↔ export): slide + fade */
