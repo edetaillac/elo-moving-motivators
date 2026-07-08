@@ -509,7 +509,7 @@ const onCelebrationAction = () => {
 
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: opacity 0.14s ease, transform 0.14s ease;
 }
 
 .fade-scale-enter-from,
@@ -524,11 +524,11 @@ const onCelebrationAction = () => {
    view commits the pick immediately instead, so animationend isn't relied on). */
 .arena .fight-container .card-won {
   z-index: 1;
-  animation: card-won 0.15s ease-out forwards;
+  animation: card-won 0.12s ease-out forwards;
 }
 
 .arena .fight-container .card-lost {
-  animation: card-lost 0.15s ease-out forwards;
+  animation: card-lost 0.12s ease-out forwards;
 }
 
 @keyframes card-won {
