@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { MOTIVATORS } from '@/store';
 import { t } from '@/i18n';
+import { iconUrl } from '@/icons';
 import ModeSelector, { Mode } from '@/components/ModeSelector.vue';
 
 defineProps<{ mode: Mode }>();
@@ -51,7 +52,7 @@ const deck = DECK_IDS.map((id, i) => {
       >
         <div class="deck-card" :style="{ animationDelay: `${card.delay}s` }">
           <div class="deck-banner" :style="{ backgroundColor: card.color }" />
-          <img class="deck-icon" :src="require(`@/assets/icons/${card.srcImg}`)" :alt="card.name">
+          <img class="deck-icon" :src="iconUrl(card.srcImg)" :alt="card.name">
         </div>
       </div>
     </div>

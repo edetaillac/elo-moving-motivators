@@ -22,13 +22,14 @@ French by default, with an English version. A toggle in the header switches betw
 
 ## Stack
 
-Vue 3 (`<script setup>`) + TypeScript + Vue Router, built with Vue CLI (webpack). No backend: the manager sharing goes through a client-side encoded code.
+Vue 3 (`<script setup>`) + TypeScript + Vue Router, built with Vite. No backend: the manager sharing goes through a client-side encoded code.
 
 ## Development
 
 ```
 npm install       # or: make install (via docker)
 npm run serve     # or: make serve   — dev + hot-reload at http://localhost:8080
-npm run build     # or: make build   — production build
+npm run build     # or: make build   — type-check (vue-tsc) + production build
+npm run preview   # serve the production build locally
 npm run lint      # or: make lint
 ```

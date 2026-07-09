@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Motivator } from '@/store';
 import { mName, mDesc } from '@/i18n';
+import { iconUrl } from '@/icons';
 
 const props = defineProps<{ item: Motivator }>();
 defineEmits<{ (e: 'choose'): void }>();
@@ -27,7 +28,7 @@ const isLightColor = computed(() => {
     >{{ mName(item) }}</div>
     <div class="card-body">
       <div class="card-image">
-        <img :src="require(`@/assets/icons/${item.srcImg}`)" :alt="mName(item)">
+        <img :src="iconUrl(item.srcImg)" :alt="mName(item)">
       </div>
       <p class="card-description">{{ mDesc(item) }}</p>
     </div>
