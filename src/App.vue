@@ -17,69 +17,39 @@
 :root {
   color-scheme: light;
 
-  /* Brand */
-  --c-brand: #B4552F;
-  --c-brand-deep: #8A3C1E;   /* pressable button bottom edge, hover */
-  --c-brand-soft: #D98A5E;   /* progress gradient start */
-  --c-focus-ring: rgba(180, 85, 47, 0.15);
+  /* Brand: warm terracotta accent (bars, filled buttons). */
+  --c-brand: #c4732e;
+  --c-brand-deep: #a85f21;   /* pressable button bottom edge, hover */
+  --c-brand-soft: #dda06a;   /* progress gradient start */
+  --c-focus-ring: rgba(196, 115, 46, 0.18);
   --c-on-brand: #ffffff;     /* text/icons on a brand-colored surface */
 
   /* Text (ink), from strongest to faintest */
-  --c-ink: #1a1c29;
-  --c-ink-2: #475467;
-  --c-ink-3: #5f6675;
-  --c-ink-muted: #667085;
-  --c-ink-faint: #6d7482;   /* AA 4.5:1 on light surfaces (was #98a2b3, ~2.6:1) */
-  --c-ink-placeholder: #b0b5c2;
+  --c-ink: #2c2622;
+  --c-ink-2: #5b524a;        /* card body text */
+  --c-ink-3: #8a7f75;        /* secondary text */
+  --c-ink-muted: #8a7f75;
+  --c-ink-faint: #a89e94;    /* discreet / hint */
+  --c-ink-placeholder: #b6ab9f;
 
-  /* Surfaces & backgrounds */
-  --c-bg: #f0f1f8;
+  /* Surfaces & backgrounds: warm neutral. */
+  --c-bg: #f4f1ec;
   --c-surface: #ffffff;
-  --c-surface-2: #f9fafc;
-  --c-surface-3: #eef0f6;
-  --c-glass: rgba(255, 255, 255, 0.7);
-  --c-glass-strong: rgba(255, 255, 255, 0.65);
+  --c-surface-2: #faf7f2;
+  --c-surface-3: #ece6dc;
+  --c-glass: rgba(255, 255, 255, 0.6);
+  --c-glass-strong: rgba(255, 255, 255, 0.72);
 
-  /* Borders */
-  --c-border: #e6e8f0;
-  --c-border-faint: rgba(15, 23, 42, 0.06);
-  --c-border-soft: rgba(15, 23, 42, 0.08);
+  /* Borders (warm, keyed off the ink) */
+  --c-border: #e6dfd4;
+  --c-border-faint: rgba(44, 38, 34, 0.07);
+  --c-border-soft: rgba(44, 38, 34, 0.15);
 
   /* States */
-  --c-disabled-bg: #c7cad6;
-  --c-disabled-edge: #a9adbd;
-  --c-danger: #b91c1c;
-  --c-dashed: #d0d5e0;       /* reveal "?" mask outline + glyph */
-}
-
-/* Dark theme: same roles, re-mapped. Brand terracotta stays; surfaces and ink
-   flip. Glass must flip too (a white glass on a dark page reads as a light blob). */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-
-    --c-ink: #f0f1f8;
-    --c-ink-2: #c3c8d4;
-    --c-ink-3: #a6acbb;
-    --c-ink-muted: #8b93a4;
-    --c-ink-faint: #868da0;   /* AA 4.5:1 on dark surfaces */
-    --c-ink-placeholder: #5a6274;
-
-    --c-bg: #14151f;
-    --c-surface: #1e2030;
-    --c-surface-2: #191b28;
-    --c-surface-3: #262a3b;
-    --c-glass: rgba(30, 32, 48, 0.7);
-    --c-glass-strong: rgba(30, 32, 48, 0.65);
-
-    --c-border: #2e3242;
-    --c-border-faint: rgba(255, 255, 255, 0.07);
-    --c-border-soft: rgba(255, 255, 255, 0.1);
-
-    --c-disabled-bg: #3a3f52;
-    --c-disabled-edge: #2b2f3e;
-    --c-dashed: #3a3f52;
-  }
+  --c-disabled-bg: #d9d1c5;
+  --c-disabled-edge: #c3b8a8;
+  --c-danger: #b3392a;
+  --c-dashed: #d8cfc2;       /* reveal "?" mask outline + glyph */
 }
 
 * {
@@ -87,16 +57,17 @@
 }
 
 body {
-  font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Text in Figtree; display headings switch to Bricolage Grotesque below. */
+  font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--c-bg);
-  background-image:
-    radial-gradient(circle at 12% 8%, rgba(180, 85, 47, 0.09), transparent 42%),
-    radial-gradient(circle at 88% 6%, rgba(244, 91, 172, 0.08), transparent 40%),
-    radial-gradient(circle at 50% 100%, rgba(52, 211, 153, 0.07), transparent 45%);
-  background-attachment: fixed;
   color: var(--c-ink);
   padding: 0;
   margin: 0;
   min-height: 100vh;
+}
+
+/* Display type: the wordmark and section titles keep the distinctive grotesque. */
+h1, h2, h3, h4, .display {
+  font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 </style>
