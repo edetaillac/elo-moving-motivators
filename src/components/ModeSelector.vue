@@ -63,10 +63,8 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  /* Sits at the very top of the onboarding card, with breathing room before
-     the illustration below. */
-  margin: 0 0 16px;
+  gap: 6px;
+  margin: 0;
 }
 
 /* "Mode :" label sitting to the left of the capsule, so the toggle reads as a
@@ -90,7 +88,7 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
   display: inline-flex;
   padding: 4px;
   border-radius: 999px;
-  background: var(--c-glass);
+  background: var(--c-bg);
   border: 1px solid var(--c-border-soft);
 }
 
@@ -128,7 +126,7 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
 .mode-help {
   margin: 0;
   max-width: 320px;
-  min-height: 2.6em;
+  min-height: 1.3em;
   font-size: 12px;
   line-height: 1.3;
   color: var(--c-ink-muted);

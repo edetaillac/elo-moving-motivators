@@ -53,12 +53,15 @@ onUnmounted(() => {
       aria-modal="true"
       aria-labelledby="celebration-title"
     >
-      <div class="celebration-emoji" aria-hidden="true">🎉</div>
+      <div class="celebration-icon" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d6a32c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4z" /><path d="M18.5 15l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z" /></svg>
+      </div>
       <h2 id="celebration-title">{{ name ? t('celebration.title', { name }) : t('celebration.titleNoName') }}</h2>
       <p>{{ manager ? t('celebration.textManager') : t('celebration.textSolo') }}</p>
       <div class="celebration-actions">
         <button ref="primaryBtn" class="celebration-primary" type="button" @click="$emit('action')">
           {{ manager ? t('celebration.primaryManager') : t('celebration.primarySolo') }}
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </button>
         <button class="celebration-secondary" type="button" @click="$emit('close')">
           {{ t('celebration.secondary') }}
@@ -76,7 +79,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 16, 26, 0.55);
+  background: rgba(44, 38, 34, 0.55);
   padding: 24px;
 }
 
@@ -85,10 +88,10 @@ onUnmounted(() => {
   max-width: 420px;
   width: 100%;
   background: var(--c-surface);
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 36px 32px;
   text-align: center;
-  box-shadow: 0 24px 60px rgba(15, 16, 26, 0.35);
+  box-shadow: 0 24px 60px rgba(30, 25, 20, 0.35);
   animation: card-bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -103,22 +106,27 @@ onUnmounted(() => {
   }
 }
 
-.celebration-emoji {
-  font-size: 44px;
-  line-height: 1;
-  margin-bottom: 12px;
-  animation: emoji-pop 0.6s ease 0.15s both;
+.celebration-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(214, 163, 44, 0.14);
+  animation: icon-pop 0.6s ease 0.15s both;
 }
 
-@keyframes emoji-pop {
+@keyframes icon-pop {
   0% { transform: scale(0) rotate(-20deg); }
-  60% { transform: scale(1.25) rotate(8deg); }
+  60% { transform: scale(1.15) rotate(8deg); }
   100% { transform: scale(1) rotate(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .celebration-card,
-  .celebration-emoji {
+  .celebration-icon {
     animation: none;
   }
 }
@@ -144,39 +152,39 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-/* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
+/* Filled accent pill with soft shadow, consistent with the other CTAs. */
 .celebration-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: none;
   background: var(--c-brand);
-  box-shadow: 0 4px 0 var(--c-brand-deep);
+  box-shadow: 0 8px 20px rgba(196, 115, 46, 0.32);
   color: var(--c-on-brand);
-  border-radius: 10px;
-  padding: 14px 20px;
-  font-size: 14px;
-  font-weight: 800;
+  border-radius: 14px;
+  padding: 14px 22px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .celebration-primary:hover {
+  background: var(--c-brand-deep);
   transform: translateY(-1px);
 }
 
-.celebration-primary:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--c-brand-deep);
-}
-
 /* The button is focused on open for a11y. Hide the default ring on
-   programmatic/mouse focus so it matches the other buttons, but keep a
-   clean, on-brand ring for keyboard users. */
+   programmatic/mouse focus, keep a clean on-brand ring for keyboard users. */
 .celebration-primary:focus {
   outline: none;
 }
 
 .celebration-primary:focus-visible {
   outline: none;
-  box-shadow: 0 4px 0 var(--c-brand-deep), 0 0 0 3px rgba(180, 85, 47, 0.45);
+  box-shadow: 0 8px 20px rgba(196, 115, 46, 0.32), 0 0 0 3px rgba(196, 115, 46, 0.4);
 }
 
 .celebration-secondary {

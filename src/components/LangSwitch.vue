@@ -1,67 +1,73 @@
 <script setup lang="ts">
-// Global, discreet FR/EN switch, fixed bottom-right, present on every route
-// so the language can be changed at any point (onboarding, duel, reveal).
+// Discreet FR/EN switch, fixed bottom-right, present on the entry screens so the
+// language can be changed before playing. Text segmented pill (no flag emoji),
+// matching the mode toggle.
 import { locale, setLocale } from '@/i18n';
 </script>
 
 <template>
-  <div class="lang-switch-global">
+  <div class="lang-switch" role="group" aria-label="Language">
     <button
       type="button"
-      class="lang-flag"
+      class="lang-opt"
       :class="{ active: locale === 'fr' }"
       :aria-pressed="locale === 'fr'"
-      aria-label="Français"
       @click="setLocale('fr')"
-    >🇫🇷</button>
+    >FR</button>
     <button
       type="button"
-      class="lang-flag"
+      class="lang-opt"
       :class="{ active: locale === 'en' }"
       :aria-pressed="locale === 'en'"
-      aria-label="English"
       @click="setLocale('en')"
-    >🇬🇧</button>
+    >EN</button>
   </div>
 </template>
 
 <style scoped>
-.lang-switch-global {
+.lang-switch {
   position: fixed;
-  bottom: 14px;
-  right: 14px;
+  bottom: 20px;
+  right: 20px;
   /* Below the celebration modal backdrop (z-index 20) so it's dimmed with the
      rest of the page when a dialog is open, above normal content otherwise. */
   z-index: 10;
   display: flex;
   gap: 2px;
-  padding: 3px;
+  padding: 4px;
   border-radius: 999px;
   background: var(--c-glass-strong);
   backdrop-filter: blur(6px);
-  border: 1px solid var(--c-border-faint);
+  border: 1px solid var(--c-border-soft);
+  box-shadow: 0 6px 16px rgba(30, 25, 20, 0.08);
 }
 
-.lang-flag {
+.lang-opt {
   border: none;
   background: none;
-  font-size: 16px;
-  line-height: 1;
-  padding: 4px;
+  min-width: 40px;
+  padding: 8px 14px;
   border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--c-ink-muted);
   cursor: pointer;
-  opacity: 0.4;
-  filter: grayscale(0.6);
-  transition: opacity 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
-.lang-flag:hover {
-  opacity: 0.8;
+.lang-opt:hover {
+  color: var(--c-ink);
 }
 
-.lang-flag.active {
-  opacity: 1;
-  filter: none;
-  background: var(--c-surface-3);
+.lang-opt.active {
+  background: var(--c-brand);
+  color: var(--c-on-brand);
+}
+
+.lang-opt:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 2px;
 }
 </style>
