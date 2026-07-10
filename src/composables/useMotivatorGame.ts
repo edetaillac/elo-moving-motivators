@@ -157,6 +157,11 @@ export function useMotivatorGame(opts: UseMotivatorGameOptions) {
     selectedItems.value = pickPair(state.items, playedPairs.value);
   };
 
+  // Load any saved game synchronously, during setup, so `started` is already
+  // correct on the very first render — no flash of the onboarding screen before
+  // onMounted swaps it for the arena.
+  const wasRestored = restore();
+
   return {
     playerName,
     mode,
@@ -171,7 +176,7 @@ export function useMotivatorGame(opts: UseMotivatorGameOptions) {
     startGame,
     chooseFavorite,
     settleDuel,
-    restore,
+    wasRestored,
     reset,
   };
 }

@@ -43,9 +43,13 @@ const {
   startGame,
   chooseFavorite,
   settleDuel,
-  restore,
+  wasRestored,
   reset,
 } = useMotivatorGame({ defaultMode, onUnlock: () => { showCelebration.value = true; } });
+
+// A restored game skips onboarding: reveal the header right away, on the first
+// render, rather than waiting for an onboarding leave transition that never runs.
+if (wasRestored) headerReady.value = true;
 
 const isManager = computed(() => mode.value === 'manager');
 // Onboarding is simply "the game hasn't started": single source of truth is the
@@ -53,6 +57,44 @@ const isManager = computed(() => mode.value === 'manager');
 const showOnboarding = computed(() => !started.value);
 
 const itemById = (id: number) => state.items.find((m) => m.id === id) as Motivator;
+
+// The duel screen is up: the game has started and we're not on a results screen.
+// Gates the topbar actions, progress bar and footer.
+const showArena = computed(() => headerReady.value && !showExport.value && !showReveal.value);
+
+// Dynamic background: two soft radial halos in the colors of the pair currently
+// in play, over the neutral warm base — refreshed each duel. Neutral elsewhere.
+const hexToRgb = (hex: string): string => {
+  const n = parseInt(hex.replace('#', ''), 16);
+  return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+};
+// Same YIQ readability check the card banner uses: dark text on a light accent
+// (yellow, light pink…), keeps the winner toast legible.
+const isLightHex = (hex: string): boolean => {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 >= 150;
+};
+const pageStyle = computed(() => {
+  // Ceremonial screens (accueil, ranking reveal, manager export) get the warm
+  // gold halo from the top of the screen, over the neutral base.
+  if (showOnboarding.value || showReveal.value || showExport.value) {
+    return {
+      background: 'radial-gradient(ellipse 70% 45% at 50% 0%, rgba(214,163,44,0.10), transparent 70%), var(--c-bg)',
+    };
+  }
+  if (!showArena.value) return { background: 'var(--c-bg)' };
+  const l = hexToRgb(selectedItems.value[0]?.color ?? '#c4732e');
+  const r = hexToRgb(selectedItems.value[1]?.color ?? '#c4732e');
+  return {
+    background:
+      `radial-gradient(circle at 22% 62%, rgba(${l},0.16), transparent 42%),` +
+      `radial-gradient(circle at 78% 62%, rgba(${r},0.16), transparent 42%),` +
+      'var(--c-bg)',
+  };
+});
 
 // A phase finished leaving. Reveal the header only once we've landed OUT of
 // onboarding, never when a reset sends us back to it, otherwise the duel header
@@ -66,6 +108,8 @@ const onDuelSettled = () => settleDuel();
 
 // Wipe the game and return to onboarding, clearing the view's UI phase too.
 const resetGame = () => {
+  if (resolveTimer) clearTimeout(resolveTimer);
+  pickedSide.value = null;
   reset();
   showCelebration.value = false;
   showExport.value = false;
@@ -75,37 +119,35 @@ const resetGame = () => {
   headerReady.value = false;
 };
 
-// Choice confirmation: the picked card pops and the other recedes for a short
-// beat before the pair swaps. Kept fast (it's paid 40-60 times) and skipped
-// under reduced motion. `confirmingSide` holds the winning card's index.
-const confirmingSide = ref<0 | 1 | null>(null);
+// Duel resolution (handoff): on a pick, the chosen card pops with a check badge,
+// the other recedes and the winner toast shows, held for a beat before the pair
+// swaps. `pickedSide` holds the winning card's index during that dwell.
+const RESOLVE_MS = 650;
+const pickedSide = ref<0 | 1 | null>(null);
+let resolveTimer: ReturnType<typeof setTimeout> | null = null;
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const commitPick = (winnerIdx: 0 | 1) => {
-  const winner = selectedItems.value[winnerIdx];
-  const loser = selectedItems.value[winnerIdx === 0 ? 1 : 0];
-  chooseFavorite(winner, loser);
+  const won = selectedItems.value[winnerIdx];
+  const lost = selectedItems.value[winnerIdx === 0 ? 1 : 0];
+  // Clear the dwell state before the pair swaps. The leaving (keyed-out) duel is
+  // frozen with its winner still highlighted, the entering pair comes in clean.
+  pickedSide.value = null;
+  chooseFavorite(won, lost);
 };
 
 const onPick = (winnerIdx: 0 | 1) => {
-  // Ignore input during the confirm beat or the card swap.
-  if (confirmingSide.value !== null || isAnimating.value) return;
+  // Ignore input during the resolution dwell or the card swap.
+  if (pickedSide.value !== null || isAnimating.value) return;
   if (prefersReducedMotion()) {
     commitPick(winnerIdx);
     return;
   }
-  confirmingSide.value = winnerIdx;
-};
-
-// The confirm animation on the picked card ended: commit the duel and swap.
-const onConfirmEnd = () => {
-  if (confirmingSide.value === null) return;
-  const winnerIdx = confirmingSide.value;
-  confirmingSide.value = null;
-  commitPick(winnerIdx);
+  pickedSide.value = winnerIdx;
+  resolveTimer = setTimeout(() => commitPick(winnerIdx), RESOLVE_MS);
 };
 
 const handleKeyDown = (e: KeyboardEvent) => {
@@ -119,14 +161,12 @@ const handleKeyDown = (e: KeyboardEvent) => {
 };
 
 onMounted(() => {
-  // Restored game: skip onboarding and show the header right away, no wait for an
-  // onboarding leave transition that never happens.
-  if (restore()) headerReady.value = true;
   window.addEventListener('keydown', handleKeyDown);
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
+  if (resolveTimer) clearTimeout(resolveTimer);
 });
 
 // Solo: reveal the ranking here. Manager: export a code to send instead.
@@ -145,42 +185,14 @@ const onCelebrationAction = () => {
 </script>
 
 <template>
-  <div class="page">
-    <header class="page-header">
-      <h1>Moving Motivators</h1>
-      <p v-if="showOnboarding">{{ t('header.subtitle.onboarding') }}</p>
-      <!-- The duel tagline only makes sense while dueling: drop it on the
-           results/export screens, which carry their own title. -->
-      <p v-else-if="!showReveal && !showExport">{{ t('header.subtitle.duel') }}</p>
-
-      <div v-if="headerReady && !showExport && !showReveal" class="header-progress">
-        <!-- Header stays pure status: duels played + progress, then a "unlocked"
-             state once the ranking opens. The action to see the ranking lives at
-             the bottom of the arena, where the flow ends. -->
-        <div class="progress-pill">
-          <span class="progress-pill-count">⚔️ {{ t('header.duels', { n: matchCount, s: matchCount === 1 ? '' : 's' }) }}</span>
-          <template v-if="!rankingUnlocked">
-            <div class="progress-pill-track">
-              <div class="progress-pill-fill" :style="{ width: reliabilityPercent + '%' }" />
-            </div>
-            <span class="progress-pill-goal">{{ t('header.progress', { p: reliabilityPercent }) }}</span>
-          </template>
-          <span v-else class="progress-pill-done">{{ t('header.unlocked') }}</span>
-        </div>
-
-        <!-- Restart, stacked under the duel count: findable, and stacks cleanly on mobile.
-             Labelled, not icon-only, so it's not mistaken for "reload / next duel". -->
-        <button
-          v-if="!confirmReset"
-          class="reset-btn"
-          type="button"
-          @click="confirmReset = true"
-        >
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-            <path d="M21 3v5h-5" />
-          </svg>
-          <span>{{ t('footer.restart') }}</span>
+  <div class="page" :style="pageStyle">
+    <!-- Onboarding is a full-screen centered accueil (title + card live in
+         OnboardingIntro), so the topbar only shows on the duel/results screens. -->
+    <header v-if="!showOnboarding" class="topbar">
+      <div class="wordmark">Moving Motivators</div>
+      <div v-if="showArena" class="topbar-actions">
+        <button v-if="!confirmReset" class="ghost-btn" type="button" @click="confirmReset = true">
+          {{ t('footer.restart') }}
         </button>
         <div v-else class="reset-confirm">
           <span class="reset-confirm-label">{{ t('footer.restartConfirm') }}</span>
@@ -189,6 +201,18 @@ const onCelebrationAction = () => {
         </div>
       </div>
     </header>
+
+    <!-- Progress toward unlocking the ranking (reliability-based), in the clean
+         thin bar from the handoff: duel index left, unlock status right. -->
+    <div v-if="showArena" class="progress">
+      <div class="progress-labels">
+        <span class="progress-duel">{{ t('progress.duel', { n: matchCount + 1 }) }}</span>
+        <span class="progress-status">{{ rankingUnlocked ? t('header.unlocked') : t('progress.toUnlock', { p: reliabilityPercent }) }}</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" :style="{ width: (rankingUnlocked ? 100 : reliabilityPercent) + '%' }" />
+      </div>
+    </div>
 
     <div class="page-content">
       <Transition name="phase" mode="out-in" @after-leave="onPhaseAfterLeave">
@@ -210,23 +234,59 @@ const onCelebrationAction = () => {
 
         <!-- Item Display -->
         <main v-else key="arena" class="arena">
+          <div class="arena-head">
+            <h1 class="arena-title">{{ t('arena.title') }}</h1>
+            <p class="arena-subtitle">{{ t('arena.subtitle') }}</p>
+          </div>
+
           <Transition name="fade-scale" mode="out-in" @after-enter="onDuelSettled">
             <div class="fight-container" :key="matchCount">
               <MotivatorCard
                 :item="selectedItems[0]"
-                :class="{ 'card-won': confirmingSide === 0, 'card-lost': confirmingSide === 1 }"
+                :won="pickedSide === 0"
+                :lost="pickedSide === 1"
                 @choose="onPick(0)"
-                @animationend="onConfirmEnd"
               />
-              <div class="vs-badge">VS</div>
+              <div class="vs-badge" :class="{ 'vs-badge--hidden': pickedSide !== null }">VS</div>
               <MotivatorCard
                 :item="selectedItems[1]"
-                :class="{ 'card-won': confirmingSide === 1, 'card-lost': confirmingSide === 0 }"
+                :won="pickedSide === 1"
+                :lost="pickedSide === 0"
                 @choose="onPick(1)"
-                @animationend="onConfirmEnd"
               />
             </div>
           </Transition>
+
+          <!-- Reserved-height slot; mirrors the duel row (two equal cells + the VS
+               spacer) so the toast lands centered under the winning card. -->
+          <div class="toast-slot">
+            <div class="toast-cell">
+              <Transition name="toast">
+                <span
+                  v-if="pickedSide === 0"
+                  class="toast"
+                  :class="{ 'toast--dark-text': isLightHex(selectedItems[0].color) }"
+                  :style="{ '--accent': selectedItems[0].color }"
+                >
+                  {{ t('arena.wins', { name: mName(selectedItems[0]) }) }}
+                </span>
+              </Transition>
+            </div>
+            <div class="toast-vs-spacer" aria-hidden="true" />
+            <div class="toast-cell">
+              <Transition name="toast">
+                <span
+                  v-if="pickedSide === 1"
+                  class="toast"
+                  :class="{ 'toast--dark-text': isLightHex(selectedItems[1].color) }"
+                  :style="{ '--accent': selectedItems[1].color }"
+                >
+                  {{ t('arena.wins', { name: mName(selectedItems[1]) }) }}
+                </span>
+              </Transition>
+            </div>
+          </div>
+
           <p class="hint">{{ t('arena.hint') }}</p>
           <!-- Ranking CTA at the end of the flow, once unlocked: the natural
                place to leave the duel loop, not up in the status header. -->
@@ -237,18 +297,19 @@ const onCelebrationAction = () => {
             @click="openResult"
           >
             {{ isManager ? t('header.getCode') : t('header.seeRanking') }}
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </button>
         </main>
       </Transition>
     </div>
 
-    <footer v-if="headerReady && !showExport && !showReveal" class="page-footer">
+    <footer v-if="showArena" class="page-footer">
       <button class="footer-link" type="button" @click="showHistory = !showHistory">
         {{ t('footer.history') }} {{ showHistory ? '▾' : '▸' }}
       </button>
       <ul v-if="showHistory" class="history-list">
         <li v-for="(match, index) in matchHistory" :key="index" class="history-row">
-          <span class="history-winner">🏆 {{ mName(itemById(match.winnerId)) }}</span>
+          <span class="history-winner">{{ mName(itemById(match.winnerId)) }}</span>
           <span class="history-loser">{{ mName(itemById(match.loserId)) }}</span>
         </li>
       </ul>
@@ -272,18 +333,28 @@ const onCelebrationAction = () => {
 
 <style>
 .page {
-  max-width: 1300px;
-  margin: 0 auto;
   min-height: 100vh;
-  padding: 40px 24px 32px;
   display: flex;
   flex-direction: column;
+  padding-bottom: 32px;
 }
 
-.page-header {
+/* Top bar: left-aligned wordmark + a right-aligned action on the duel/results
+   screens; a centered hero on onboarding. */
+.topbar {
   flex-shrink: 0;
-  text-align: center;
-  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+}
+
+.wordmark {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
 }
 
 .page-content {
@@ -291,68 +362,28 @@ const onCelebrationAction = () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 24px 0;
+  /* Horizontal gutter so the arena / reveal / export never touch the screen
+     edges on mobile (invisible on desktop, content is centered + capped). */
+  padding: 24px 20px;
 }
 
-.page-header h1 {
-  margin: 0 0 10px;
-  /* Display type: scales with the viewport, leans on the font's optical sizing.
-     Big + heavy title vs a small, quiet subtitle = deliberate weight/size jump. */
-  font-size: clamp(34px, 5.5vw, 48px);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
-}
-
-.page-header p {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--c-ink-3);
-}
-
-/* Arena */
-.arena {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.header-progress {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-/* Restart control under the duel count. Labelled (icon + text) so it reads as
-   "start over", not "reload / next duel". Kept discreet. */
-.reset-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--c-border-soft);
+/* Ghost restart button (handoff): quiet pill on the neutral background. */
+.ghost-btn {
+  border: 1.5px solid var(--c-border-soft);
   background: var(--c-glass);
-  color: var(--c-ink-3);
+  color: var(--c-ink-2);
   font: inherit;
-  font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 999px;
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.reset-btn svg {
-  flex-shrink: 0;
-}
-
-.reset-btn:hover {
+.ghost-btn:hover {
   color: var(--c-brand);
-  border-color: rgba(180, 85, 47, 0.4);
+  border-color: color-mix(in srgb, var(--c-brand) 40%, transparent);
 }
 
 .reset-confirm {
@@ -366,7 +397,7 @@ const onCelebrationAction = () => {
 }
 
 .reset-confirm-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--c-ink-2);
 }
@@ -376,9 +407,9 @@ const onCelebrationAction = () => {
   border: none;
   border-radius: 999px;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
-  padding: 4px 12px;
+  padding: 5px 14px;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
@@ -401,87 +432,107 @@ const onCelebrationAction = () => {
   color: var(--c-ink);
 }
 
-/* Merged indicator: duels played + progress bar toward unlocking the ranking. */
-.progress-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  background: var(--c-glass);
-  border: 1px solid var(--c-border-faint);
+/* Progress toward unlocking the ranking, thin bar (handoff). */
+.progress {
+  max-width: 360px;
+  width: 100%;
+  margin: 8px auto 0;
+  padding: 0 24px;
 }
 
-.progress-pill-count {
-  font-size: 12px;
-  font-weight: 800;
+.progress-labels {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progress-duel {
+  font-size: 13px;
+  font-weight: 700;
   color: var(--c-ink);
-  white-space: nowrap;
 }
 
-.progress-pill-track {
-  width: 84px;
-  height: 7px;
+.progress-status {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-ink-3);
+}
+
+.progress-track {
+  height: 6px;
   border-radius: 999px;
-  background: var(--c-border);
+  background: rgba(44, 38, 34, 0.09);
   overflow: hidden;
 }
 
-.progress-pill-fill {
+.progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--c-brand-soft), var(--c-brand));
-  transition: width 0.4s ease;
+  background: var(--c-brand);
+  transition: width 0.5s ease;
 }
 
-.progress-pill-goal {
-  font-size: 12px;
+/* Arena: title + duel row + toast + hint, centered, generous rhythm. */
+.arena {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.arena-head {
+  text-align: center;
+  max-width: 520px;
+}
+
+.arena-title {
+  margin: 0 0 4px;
+  font-family: 'Bricolage Grotesque', sans-serif;
   font-weight: 700;
-  color: var(--c-ink-muted);
-  white-space: nowrap;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
 }
 
-/* Unlocked state in the status pill: no more progress bar, just the good news. */
-.progress-pill-done {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--c-brand);
-  white-space: nowrap;
+.arena-subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: var(--c-ink-3);
 }
 
-/* Ranking CTA sitting at the bottom of the arena. A touch bigger than its old
-   header incarnation since it's now the standout action of the screen. */
+/* Ranking CTA at the bottom of the arena, once unlocked. Soft-shadow accent
+   pill, consistent with the accueil / manager / reveal CTAs. */
 .arena-reveal {
   margin-top: 4px;
-  padding: 12px 24px;
-  font-size: 14px;
 }
 
-/* Chunky, Duolingo-style "pressable" button: solid bottom edge that flattens on click. */
 .reveal-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: none;
+  border-radius: 14px;
+  padding: 13px 24px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
   background: var(--c-brand);
-  box-shadow: 0 4px 0 var(--c-brand-deep);
-  border-radius: 10px;
-  padding: 10px 18px;
-  font-size: 13px;
-  font-weight: 800;
   color: var(--c-on-brand);
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 8px 20px rgba(196, 115, 46, 0.32);
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .reveal-trigger:hover {
+  background: var(--c-brand-deep);
   transform: translateY(-1px);
-}
-
-.reveal-trigger:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--c-brand-deep);
 }
 
 .fight-container {
   width: 100%;
+  max-width: 780px;
   display: flex;
   justify-content: center;
   align-items: stretch;
@@ -489,64 +540,96 @@ const onCelebrationAction = () => {
   position: relative;
 }
 
+/* VS badge overlapping the two cards, fades out while a duel resolves. */
 .vs-badge {
   align-self: center;
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(155deg, #2a2d3e, #14151f);
-  box-shadow: 0 0 0 5px var(--c-bg), 0 0 0 6px rgba(180, 85, 47, 0.25), 0 8px 16px rgba(20, 21, 31, 0.25);
-  color: var(--c-on-brand);
-  font-size: 15px;
-  font-weight: 700;
+  flex: none;
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  background: var(--c-ink);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  border: 3px solid var(--c-bg);
+  margin: 0 -14px;
+  z-index: 2;
+  transition: opacity 0.3s ease;
+}
+
+.vs-badge--hidden {
+  opacity: 0;
+}
+
+/* Reserved height so the winner toast doesn't shift the layout. Mirrors the duel
+   row (two flex:1 cells + the VS-width spacer) so the toast sits centered under
+   whichever card won. */
+.toast-slot {
+  width: 100%;
+  max-width: 780px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.toast-cell {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.toast-vs-spacer {
+  flex: none;
+  width: 58px;
+  margin: 0 -14px;
+}
+
+.toast {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.toast--dark-text {
+  color: #2c2622;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
 }
 
 .hint {
-  margin: 20px 0 0;
+  margin: 0;
   text-align: center;
-  font-size: 12px;
-  color: var(--c-ink-3);
+  font-size: 13px;
+  color: var(--c-ink-faint);
 }
 
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-  transition: opacity 0.14s ease, transform 0.14s ease;
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
 .fade-scale-enter-from,
 .fade-scale-leave-to {
   opacity: 0;
   transform: scale(0.97);
-}
-
-/* Choice confirmation: a short beat on the chosen pair before it swaps out.
-   The picked card pops and lifts, the other recedes (fade + shrink + desaturate),
-   so the choice reads before the next duel. Skipped under reduced motion (the
-   view commits the pick immediately instead, so animationend isn't relied on). */
-/* Winner: a static soft glow (blur, no spread) in the card's accent color, no
-   movement. Static, not a keyframe, so it doesn't reset-then-regrow the shadow
-   over the one already there on hover (that flicker read as a jolt at click).
-   The card's own box-shadow transition eases it in. */
-.arena .fight-container .card-won {
-  z-index: 1;
-  box-shadow:
-    0 6px 26px 2px color-mix(in srgb, var(--accent) 32%, transparent),
-    0 0 14px color-mix(in srgb, var(--accent) 26%, transparent);
-}
-
-/* Loser: gently dims and recedes. This animation's end triggers the commit
-   (see onConfirmEnd), so it must stay a keyframe animation. */
-.arena .fight-container .card-lost {
-  animation: card-lost 0.12s ease-out forwards;
-}
-
-@keyframes card-lost {
-  0% { opacity: 1; transform: scale(1); filter: saturate(1); }
-  100% { opacity: 0.5; transform: scale(0.97); filter: saturate(0.45); }
 }
 
 /* Phase switch (onboarding ↔ duel ↔ export): slide + fade */
@@ -659,28 +742,42 @@ const onCelebrationAction = () => {
     margin: 0;
   }
 
+  /* Cards stack, so just center the toast rather than under a column cell. */
+  .toast-slot {
+    gap: 0;
+    justify-content: center;
+  }
+
+  .toast-cell {
+    flex: 0 1 auto;
+  }
+
+  .toast-vs-spacer {
+    display: none;
+  }
+
   /* Compact duel cards so both options + VS fit on one phone screen —
      the core "compare at a glance and choose" must not require scrolling.
      GameView's <style> is global (not scoped), so target the card classes
      directly; .arena prefix raises specificity above MotivatorCard's own rules. */
-  .arena .fight-container .card-banner {
-    padding: 10px 14px;
-    font-size: 15px;
-  }
-
   .arena .fight-container .card-body {
-    gap: 8px;
-    padding: 12px 16px 16px;
+    gap: 12px;
+    padding: 18px 16px 20px;
   }
 
-  .arena .fight-container .card-image {
-    max-width: 150px;
-    margin: 0 auto;
+  .arena .fight-container .card-icon {
+    width: 76px;
+    height: 76px;
+  }
+
+  .arena .fight-container .card-icon img {
+    width: 50px;
+    height: 50px;
   }
 
   .arena .fight-container .card-description {
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: 13px;
+    line-height: 1.45;
   }
 }
 </style>
