@@ -160,8 +160,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   top: 0;
   left: 0;
   right: 0;
-  height: 560px;
-  background: radial-gradient(ellipse 64% 100% at 50% 0%, color-mix(in srgb, var(--winner, transparent) 32%, transparent), transparent 72%);
+  height: 620px;
+  /* Centered inside the box (behind the podium), not on the top edge — otherwise
+     the gradient peaks right at the edge and reads as a hard horizontal cut. */
+  background: radial-gradient(ellipse 62% 55% at 50% 42%, color-mix(in srgb, var(--winner, transparent) 32%, transparent), transparent 70%);
   opacity: 0;
   pointer-events: none;
   z-index: 0;
