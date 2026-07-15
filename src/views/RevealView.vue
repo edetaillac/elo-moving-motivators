@@ -66,7 +66,7 @@ const reset = () => {
       <div class="wordmark">Moving Motivators</div>
     </header>
 
-    <div class="reveal-content">
+    <div class="reveal-content" :class="{ 'reveal-content--result': revealItems }">
       <!-- No in-card "Fermer": the topbar "Accueil" is the single exit, matching
            the in-game ranking screen. -->
       <ResultsReveal
@@ -176,6 +176,12 @@ const reset = () => {
   flex-direction: column;
   justify-content: center;
   padding: 24px 24px 48px;
+}
+
+/* The reveal is tall and ceremonial: pin it near the top instead of centering
+   it vertically, so there's no big empty band under the top bar. */
+.reveal-content--result {
+  justify-content: flex-start;
 }
 
 .uploader {

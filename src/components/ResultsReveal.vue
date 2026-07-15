@@ -74,7 +74,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>
-  <div class="reveal">
+  <div class="reveal" :class="{ 'reveal--crowned': isRevealed(1) }" :style="{ '--winner': items[0]?.color }">
     <div class="reveal-inner">
       <header class="reveal-header">
         <h2 v-if="name" ref="headingRef" tabindex="-1">{{ titleParts[0] }}<span class="reveal-name">{{ name }}</span>{{ titleParts[1] }}</h2>
@@ -98,7 +98,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
             <!-- Revealed -->
             <template v-else>
               <div v-if="slot.winner" class="crown" aria-hidden="true">
-                <svg width="54" height="36" viewBox="0 0 24 16" fill="#e3b13a" stroke="#c4922a" stroke-width=".8" stroke-linejoin="round"><path d="M1.4 13.5L.4 4.2l5.4 4L12 1.2l6.2 7 5.4-4-1 9.3z" /><circle cx="12" cy="1.2" r="1.3" fill="#e3b13a" /></svg>
+                <svg width="54" height="36" viewBox="0 0 24 16" fill="#e3b13a" stroke="#dcab42" stroke-width=".5" stroke-linejoin="round"><path d="M1.4 13.5L.4 4.2l5.4 4L12 1.2l6.2 7 5.4-4-1 9.3z" /><circle cx="12" cy="1.2" r="1.3" fill="#e3b13a" /></svg>
+                <span class="crown-sparkle" aria-hidden="true">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff6db"><path d="M12 1.5l2.4 7.1 7.1 2.4-7.1 2.4L12 22.5l-2.4-7.1L2.5 11l7.1-2.4z" /></svg>
+                </span>
               </div>
               <div class="pcard" :class="{ 'pcard--winner': slot.winner }">
                 <div class="pcard-banner" :class="{ 'pcard-banner--dark': isLightHex(slot.item.color) }">{{ mName(slot.item) }}</div>
@@ -148,7 +151,40 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   padding: 8px 0 104px;
 }
 
+/* Subtle halo in the #1 motivator's color, echoing the duel screen's colored
+   glow. Blooms in only once the winner (rank 1) is revealed, so it never hints
+   at the result early. */
+.reveal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 560px;
+  background: radial-gradient(ellipse 64% 100% at 50% 0%, color-mix(in srgb, var(--winner, transparent) 32%, transparent), transparent 72%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Bloom in when the winner (rank 1) is revealed, then breathe gently. */
+.reveal--crowned::before {
+  animation: halo-in 0.9s ease forwards, halo-breathe 6s ease-in-out 0.9s infinite;
+}
+
+@keyframes halo-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes halo-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.62; }
+}
+
 .reveal-inner {
+  position: relative;
+  z-index: 1;
   max-width: 900px;
   margin: 0 auto;
   padding: 0 8px;
@@ -350,10 +386,27 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 }
 
 .crown {
+  position: relative;
   margin-bottom: -8px;
   z-index: 2;
-  filter: drop-shadow(0 4px 6px rgba(196, 146, 42, 0.45));
+  /* Softer contour: a gentle layered golden glow instead of one hard shadow. */
+  filter: drop-shadow(0 2px 3px rgba(196, 146, 42, 0.3)) drop-shadow(0 0 6px rgba(227, 177, 58, 0.55));
   animation: crownIn 0.6s 0.15s both;
+}
+
+/* Subtle twinkling sparkle at the crown's top-right. */
+.crown-sparkle {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  display: block;
+  filter: drop-shadow(0 0 3px rgba(255, 241, 194, 0.9));
+  animation: sparkle-twinkle 2.6s ease-in-out infinite;
+}
+
+@keyframes sparkle-twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.75) rotate(-8deg); }
+  50% { opacity: 1; transform: scale(1.1) rotate(10deg); }
 }
 
 /* Ranks 4 → 10 */
@@ -497,8 +550,18 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   .pcard,
   .pedestal,
   .row,
-  .crown {
+  .crown,
+  .crown-sparkle {
     animation: none;
+  }
+
+  .reveal--crowned::before {
+    animation: none;
+    opacity: 1;
+  }
+
+  .crown-sparkle {
+    opacity: 0.85;
   }
 }
 
