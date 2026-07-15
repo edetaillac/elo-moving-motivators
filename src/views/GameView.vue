@@ -15,8 +15,6 @@ import { useMotivatorGame } from '@/composables/useMotivatorGame';
 // Pure UI phase state, owned by the view. The game model, pairing and
 // persistence live in the composable.
 const showCelebration = ref(false);
-const showExport = ref(false);
-const showReveal = ref(false);
 const showHistory = ref(false);
 const confirmReset = ref(false);
 // Held back until the onboarding card has actually finished leaving, so the game
@@ -58,9 +56,13 @@ const showOnboarding = computed(() => !started.value);
 
 const itemById = (id: number) => state.items.find((m) => m.id === id) as Motivator;
 
-// The duel screen is up: the game has started and we're not on a results screen.
-// Gates the topbar actions, progress bar and footer.
-const showArena = computed(() => headerReady.value && !showExport.value && !showReveal.value);
+// The duel screen: game started, ranking not yet unlocked. Once unlocked the
+// game is over (a full round robin is done), so we never show a playable duel
+// again. Gates the progress bar and the history footer.
+const showArena = computed(() => headerReady.value && !showOnboarding.value && !rankingUnlocked.value);
+// The terminal result screen: the ranking (solo) or the export code (manager),
+// shown as soon as the ranking unlocks. No path back to a duel.
+const showResult = computed(() => headerReady.value && rankingUnlocked.value);
 
 // Dynamic background: two soft radial halos in the colors of the pair currently
 // in play, over the neutral warm base — refreshed each duel. Neutral elsewhere.
@@ -80,7 +82,7 @@ const isLightHex = (hex: string): boolean => {
 const pageStyle = computed(() => {
   // Ceremonial screens (accueil, ranking reveal, manager export) get the warm
   // gold halo from the top of the screen, over the neutral base.
-  if (showOnboarding.value || showReveal.value || showExport.value) {
+  if (showOnboarding.value || showResult.value) {
     return {
       background: 'radial-gradient(ellipse 70% 45% at 50% 0%, rgba(214,163,44,0.10), transparent 70%), var(--c-bg)',
     };
@@ -112,8 +114,6 @@ const resetGame = () => {
   pickedSide.value = null;
   reset();
   showCelebration.value = false;
-  showExport.value = false;
-  showReveal.value = false;
   showHistory.value = false;
   confirmReset.value = false;
   headerReady.value = false;
@@ -151,7 +151,7 @@ const onPick = (winnerIdx: 0 | 1) => {
 };
 
 const handleKeyDown = (e: KeyboardEvent) => {
-  if (showOnboarding.value || showExport.value || showReveal.value || showCelebration.value) return;
+  if (showOnboarding.value || showResult.value || showCelebration.value) return;
 
   if (e.code === 'ArrowLeft') {
     onPick(0);
@@ -169,18 +169,10 @@ onUnmounted(() => {
   if (resolveTimer) clearTimeout(resolveTimer);
 });
 
-// Solo: reveal the ranking here. Manager: export a code to send instead.
-const openResult = () => {
-  if (isManager.value) {
-    showExport.value = true;
-  } else {
-    showReveal.value = true;
-  }
-};
-
+// Dismissing the celebration reveals the terminal result screen underneath,
+// already mounted since the ranking is unlocked.
 const onCelebrationAction = () => {
   showCelebration.value = false;
-  openResult();
 };
 </script>
 
@@ -190,7 +182,7 @@ const onCelebrationAction = () => {
          OnboardingIntro), so the topbar only shows on the duel/results screens. -->
     <header v-if="!showOnboarding" class="topbar">
       <div class="wordmark">Moving Motivators</div>
-      <div v-if="showArena" class="topbar-actions">
+      <div v-if="showArena || showResult" class="topbar-actions">
         <button v-if="!confirmReset" class="ghost-btn" type="button" @click="confirmReset = true">
           {{ t('footer.restart') }}
         </button>
@@ -218,18 +210,17 @@ const onCelebrationAction = () => {
       <Transition name="phase" mode="out-in" @after-leave="onPhaseAfterLeave">
         <OnboardingIntro v-if="showOnboarding" key="onboarding" v-model:mode="mode" @start="startGame" />
         <ExportResults
-          v-else-if="showExport"
+          v-else-if="showResult && isManager"
           key="export"
           :name="playerName"
           :items="rankedItems"
-          @close="showExport = false"
         />
         <ResultsReveal
-          v-else-if="showReveal"
+          v-else-if="showResult"
           key="reveal"
           :items="rankedItems"
           :name="playerName"
-          @close="showReveal = false"
+          :show-close="false"
         />
 
         <!-- Item Display -->
@@ -288,17 +279,6 @@ const onCelebrationAction = () => {
           </div>
 
           <p class="hint">{{ t('arena.hint') }}</p>
-          <!-- Ranking CTA at the end of the flow, once unlocked: the natural
-               place to leave the duel loop, not up in the status header. -->
-          <button
-            v-if="rankingUnlocked"
-            class="reveal-trigger arena-reveal"
-            type="button"
-            @click="openResult"
-          >
-            {{ isManager ? t('header.getCode') : t('header.seeRanking') }}
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </button>
         </main>
       </Transition>
     </div>

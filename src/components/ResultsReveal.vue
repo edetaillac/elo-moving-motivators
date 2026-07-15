@@ -4,7 +4,9 @@ import { Motivator } from '@/store';
 import { iconUrl } from '@/icons';
 import { t, placeLabel, mName, mDesc } from '@/i18n';
 
-const props = defineProps<{ items: Motivator[]; name?: string }>();
+const props = withDefaults(defineProps<{ items: Motivator[]; name?: string; showClose?: boolean }>(), {
+  showClose: true,
+});
 defineEmits<{ (e: 'close'): void }>();
 
 const TOTAL = 10;
@@ -77,7 +79,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
       <header class="reveal-header">
         <h2 v-if="name" ref="headingRef" tabindex="-1">{{ titleParts[0] }}<span class="reveal-name">{{ name }}</span>{{ titleParts[1] }}</h2>
         <h2 v-else ref="headingRef" tabindex="-1">{{ t('reveal.titleNoName') }}</h2>
-        <button class="reveal-close" type="button" @click="$emit('close')">{{ t('reveal.close') }}</button>
+        <button v-if="showClose" class="reveal-close" type="button" @click="$emit('close')">{{ t('reveal.close') }}</button>
       </header>
 
       <!-- Board -->
