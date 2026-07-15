@@ -67,10 +67,13 @@ const reset = () => {
     </header>
 
     <div class="reveal-content">
+      <!-- No in-card "Fermer": the topbar "Accueil" is the single exit, matching
+           the in-game ranking screen. -->
       <ResultsReveal
         v-if="revealItems"
         :items="revealItems"
         :name="revealName"
+        :show-close="false"
         @close="reset"
       />
 
