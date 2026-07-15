@@ -386,14 +386,18 @@ const onCelebrationAction = () => {
   border-color: color-mix(in srgb, var(--c-brand) 40%, transparent);
 }
 
+/* Same glass pill chrome as LangSwitch / ModeSelector (glass-strong fill, blur,
+   soft shadow) so the confirm affordance reads as part of the same toggle system. */
 .reset-confirm {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 6px 4px 12px;
   border-radius: 999px;
-  background: var(--c-glass);
+  background: var(--c-glass-strong);
+  backdrop-filter: blur(6px);
   border: 1px solid var(--c-border-soft);
+  box-shadow: 0 6px 16px rgba(30, 25, 20, 0.08);
 }
 
 .reset-confirm-label {
@@ -423,8 +427,9 @@ const onCelebrationAction = () => {
   background: var(--c-brand-deep);
 }
 
+/* Quiet inactive segment (transparent), mirroring an unselected toggle option. */
 .reset-no {
-  background: var(--c-surface-3);
+  background: none;
   color: var(--c-ink-muted);
 }
 

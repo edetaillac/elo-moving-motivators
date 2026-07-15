@@ -82,14 +82,17 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
   white-space: nowrap;
 }
 
-/* Segmented pill, same visual language as the progress-pill that appears in
-   this exact spot once the game starts. */
+/* Segmented pill, sharing the exact container styling as LangSwitch (glass fill,
+   blur, soft shadow, 2px inter-segment gap) so the two toggles read as one system. */
 .mode-capsule {
   display: inline-flex;
+  gap: 2px;
   padding: 4px;
   border-radius: 999px;
-  background: var(--c-bg);
+  background: var(--c-glass-strong);
+  backdrop-filter: blur(6px);
   border: 1px solid var(--c-border-soft);
+  box-shadow: 0 6px 16px rgba(30, 25, 20, 0.08);
 }
 
 .mode-option {
@@ -126,7 +129,9 @@ const select = (mode: Mode) => emit('update:modelValue', mode);
 .mode-help {
   margin: 0;
   max-width: 320px;
-  min-height: 1.3em;
+  /* Reserve two lines so the layout below doesn't jump when the help switches
+     between the one-line Solo text and the two-line Manager text. */
+  min-height: 2.6em;
   font-size: 12px;
   line-height: 1.3;
   color: var(--c-ink-muted);
