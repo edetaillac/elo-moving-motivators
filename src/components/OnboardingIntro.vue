@@ -291,6 +291,16 @@ const deck = DECK_IDS.map((id, i) => {
     padding: 32px 22px;
   }
 
+  /* The fanned deck spreads ±118px and its cards rotate, so at full size it
+     overflows the narrow card and gets clipped on the right. Scale it down so
+     the whole fan fits; the reserved box shrinks with it. */
+  .deck {
+    transform: scale(0.8);
+    transform-origin: top center;
+    height: 104px;
+    margin-bottom: 24px;
+  }
+
   .accueil-form {
     flex-direction: column;
   }

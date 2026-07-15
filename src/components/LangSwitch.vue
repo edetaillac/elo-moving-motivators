@@ -70,4 +70,15 @@ import { locale, setLocale } from '@/i18n';
   outline: 2px solid var(--c-brand);
   outline-offset: 2px;
 }
+
+/* Mobile: move to the top-right corner. Bottom-right would overlap the entry
+   CTAs ("C'est parti", "Importer un fichier") that go full-width at the bottom
+   of the card on small screens. */
+@media (max-width: 480px) {
+  .lang-switch {
+    top: 14px;
+    right: 14px;
+    bottom: auto;
+  }
+}
 </style>

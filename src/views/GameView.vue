@@ -707,10 +707,24 @@ const onCelebrationAction = () => {
 }
 
 @media (max-width: 720px) {
+  /* Reclaim vertical space so both cards + the VS fit without scrolling — the
+     "compare at a glance and choose" must not require a scroll. */
+  .arena {
+    gap: 16px;
+  }
+
+  .arena-title {
+    font-size: 22px;
+  }
+
+  .arena-subtitle {
+    font-size: 14px;
+  }
+
   .fight-container {
     flex-direction: column;
     align-items: center;
-    gap: 18px;
+    gap: 14px;
   }
 
   /* Stacked cards: force equal full width, else each card sizes to its own
@@ -745,24 +759,35 @@ const onCelebrationAction = () => {
      the core "compare at a glance and choose" must not require scrolling.
      GameView's <style> is global (not scoped), so target the card classes
      directly; .arena prefix raises specificity above MotivatorCard's own rules. */
+  .arena .fight-container .card-banner {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
   .arena .fight-container .card-body {
-    gap: 12px;
-    padding: 18px 16px 20px;
+    gap: 10px;
+    padding: 14px 16px 16px;
   }
 
   .arena .fight-container .card-icon {
-    width: 76px;
-    height: 76px;
+    width: 58px;
+    height: 58px;
   }
 
   .arena .fight-container .card-icon img {
-    width: 50px;
-    height: 50px;
+    width: 38px;
+    height: 38px;
   }
 
+  /* Clamp the description to two lines so both cards stay compact: the banner
+     name and illustration carry the identity for the snap comparison. */
   .arena .fight-container .card-description {
-    font-size: 13px;
-    line-height: 1.45;
+    font-size: 12.5px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 </style>
