@@ -99,8 +99,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
             <template v-else>
               <div v-if="slot.winner" class="crown" aria-hidden="true">
                 <svg width="54" height="36" viewBox="0 0 24 16" fill="#e3b13a" stroke="#dcab42" stroke-width=".5" stroke-linejoin="round"><path d="M1.4 13.5L.4 4.2l5.4 4L12 1.2l6.2 7 5.4-4-1 9.3z" /><circle cx="12" cy="1.2" r="1.3" fill="#e3b13a" /></svg>
-                <span class="crown-sparkle" aria-hidden="true">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff6db"><path d="M12 1.5l2.4 7.1 7.1 2.4-7.1 2.4L12 22.5l-2.4-7.1L2.5 11l7.1-2.4z" /></svg>
+                <span class="crown-sparkles" aria-hidden="true">
+                  <svg class="sparkle sparkle--a" width="15" height="15" viewBox="0 0 24 24" fill="#fff6db"><path d="M12 1.5l2.4 7.1 7.1 2.4-7.1 2.4L12 22.5l-2.4-7.1L2.5 11l7.1-2.4z" /></svg>
+                  <svg class="sparkle sparkle--b" width="9" height="9" viewBox="0 0 24 24" fill="#ffedb0"><path d="M12 1.5l2.4 7.1 7.1 2.4-7.1 2.4L12 22.5l-2.4-7.1L2.5 11l7.1-2.4z" /></svg>
+                  <svg class="sparkle sparkle--c" width="6" height="6" viewBox="0 0 24 24" fill="#fff6db"><path d="M12 1.5l2.4 7.1 7.1 2.4-7.1 2.4L12 22.5l-2.4-7.1L2.5 11l7.1-2.4z" /></svg>
                 </span>
               </div>
               <div class="pcard" :class="{ 'pcard--winner': slot.winner }">
@@ -396,19 +398,39 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   animation: crownIn 0.6s 0.15s both;
 }
 
-/* Subtle twinkling sparkle at the crown's top-right. */
-.crown-sparkle {
+/* A tiny cluster of sparkles at the crown's top-right. Each one glints briefly
+   then rests, on its own long, offset cadence — subtle, like a real twinkle. */
+.crown-sparkles {
   position: absolute;
-  top: -5px;
-  right: -7px;
-  display: block;
-  filter: drop-shadow(0 0 3px rgba(255, 241, 194, 0.9));
-  animation: sparkle-twinkle 2.6s ease-in-out infinite;
+  top: -8px;
+  right: -12px;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
 }
 
-@keyframes sparkle-twinkle {
-  0%, 100% { opacity: 0.2; transform: scale(0.75) rotate(-8deg); }
-  50% { opacity: 1; transform: scale(1.1) rotate(10deg); }
+.crown-sparkles .sparkle {
+  position: absolute;
+  filter: drop-shadow(0 0 2px rgba(255, 240, 190, 0.75));
+  opacity: 0;
+  transform-origin: center;
+  /* Same cycle for the three, with staggered delays: they glint one after
+     another in a little sweep, then rest together before it repeats. */
+  animation: twinkle 4.5s ease-in-out infinite;
+}
+
+.sparkle--a { top: 3px; right: 2px; animation-delay: 0s; }
+.sparkle--b { top: 15px; right: 15px; animation-delay: 0.4s; }
+.sparkle--c { top: -1px; right: 19px; animation-delay: 0.8s; }
+
+/* A brief glint with a faint secondary flicker, then dark for the rest of the
+   cycle — a real twinkle rather than a slow pulse. */
+@keyframes twinkle {
+  0% { opacity: 0; transform: scale(0.3); }
+  6% { opacity: 0.9; transform: scale(1); }
+  12% { opacity: 0.2; transform: scale(0.8); }
+  18% { opacity: 0.55; transform: scale(0.95); }
+  26%, 100% { opacity: 0; transform: scale(0.4); }
 }
 
 /* Ranks 4 → 10 */
