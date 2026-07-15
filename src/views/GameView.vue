@@ -39,7 +39,7 @@ const {
   matchCount,
   rankingUnlocked,
   rankedItems,
-  reliabilityPercent,
+  progressPercent,
   startGame,
   chooseFavorite,
   settleDuel,
@@ -207,10 +207,10 @@ const onCelebrationAction = () => {
     <div v-if="showArena" class="progress">
       <div class="progress-labels">
         <span class="progress-duel">{{ t('progress.duel', { n: matchCount + 1 }) }}</span>
-        <span class="progress-status">{{ rankingUnlocked ? t('header.unlocked') : t('progress.toUnlock', { p: reliabilityPercent }) }}</span>
+        <span class="progress-status">{{ rankingUnlocked ? t('header.unlocked') : t('progress.toUnlock', { p: progressPercent }) }}</span>
       </div>
       <div class="progress-track">
-        <div class="progress-fill" :style="{ width: (rankingUnlocked ? 100 : reliabilityPercent) + '%' }" />
+        <div class="progress-fill" :style="{ width: (rankingUnlocked ? 100 : progressPercent) + '%' }" />
       </div>
     </div>
 

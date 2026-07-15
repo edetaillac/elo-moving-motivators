@@ -69,7 +69,7 @@ const deck = DECK_IDS.map((id, i) => {
         <span class="estimate-icon" aria-hidden="true">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8" /><path d="M12 13V9M9 1h6M18 5l1.5-1.5" /></svg>
         </span>
-        {{ estimateParts[0] }}<strong>{{ t('onboarding.estimateBold') }}</strong>{{ estimateParts[1] }}
+        <span class="estimate-text">{{ estimateParts[0] }}<strong>{{ t('onboarding.estimateBold') }}</strong>{{ estimateParts[1] }}</span>
       </p>
 
       <div class="accueil-form">

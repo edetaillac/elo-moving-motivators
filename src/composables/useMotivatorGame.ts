@@ -5,14 +5,14 @@
 import { computed, ref } from 'vue';
 import { state, Motivator, Mode } from '@/store';
 import { updateElo } from '@/elo';
-import { pairKey, pickPair } from '@/pairing';
+import { pairKey, pickPair, totalPairs } from '@/pairing';
 import { loadGame, saveGame, clearGame, SaveData } from '@/persistence';
 
-// Ranking reliability: hidden until every item has enough duels behind it AND
-// the top of the ranking has stopped moving around.
-const MIN_SHOWN_PER_ITEM = 5;
-const STABILITY_WINDOW = 10;
-const TOP_N_FOR_STABILITY = 3;
+// The ranking unlocks after a full round robin: every unique pair judged once.
+// With 10 motivators that's 45 duels (C(10,2)) — each motivator has then faced
+// every other one exactly once and the ELO ranking is complete. The pairing
+// never repeats a pair before all 45 are seen, so the duel count maps 1:1 to
+// pairs judged, and the progress bar is a plain, monotonic duels / total.
 
 export interface Match {
   winnerId: number;
@@ -42,16 +42,14 @@ export function useMotivatorGame(opts: UseMotivatorGameOptions) {
   // duel, and ids serialize cleanly for persistence.
   const matchHistory = ref<Match[]>([]);
   const matchCount = ref(0);
-  const stableStreak = ref(0);
   const rankingUnlocked = ref(false);
-  let previousTopGroup: number[] = [];
+
+  // Total duels for a full round robin (45 for 10 motivators).
+  const TOTAL_DUELS = totalPairs(state.items.length);
 
   const rankedItems = computed(() => [...state.items].sort((a, b) => b.elo - a.elo));
-  const minShownCount = computed(() => Math.min(...state.items.map((item) => item.shownCount)));
-  const exposureScore = computed(() => Math.min(1, minShownCount.value / MIN_SHOWN_PER_ITEM));
-  const stabilityScore = computed(() => Math.min(1, stableStreak.value / STABILITY_WINDOW));
-  const reliability = computed(() => Math.min(exposureScore.value, stabilityScore.value));
-  const reliabilityPercent = computed(() => Math.round(reliability.value * 100));
+  const progress = computed(() => Math.min(1, matchCount.value / TOTAL_DUELS));
+  const progressPercent = computed(() => Math.round(progress.value * 100));
 
   function snapshot(): SaveData {
     return {
@@ -63,8 +61,6 @@ export function useMotivatorGame(opts: UseMotivatorGameOptions) {
       elos: Object.fromEntries(state.items.map((i) => [i.id, i.elo])),
       shown: Object.fromEntries(state.items.map((i) => [i.id, i.shownCount])),
       playedPairs: [...playedPairs.value],
-      stableStreak: stableStreak.value,
-      previousTopGroup,
       rankingUnlocked: rankingUnlocked.value,
       history: matchHistory.value,
     };
@@ -93,16 +89,8 @@ export function useMotivatorGame(opts: UseMotivatorGameOptions) {
     // Remember this pair so it isn't re-proposed until the cycle resets.
     playedPairs.value.add(pairKey(winner, loser));
 
-    // Track how long the same trio has held the top spots, regardless of their
-    // internal order (near-tied items can swap 1st/2nd without counting as churn).
-    const topGroup = rankedItems.value.slice(0, TOP_N_FOR_STABILITY).map((item) => item.id);
-    const isSameGroup =
-      topGroup.length === previousTopGroup.length &&
-      topGroup.every((id) => previousTopGroup.includes(id));
-    stableStreak.value = isSameGroup ? stableStreak.value + 1 : 0;
-    previousTopGroup = topGroup;
-
-    if (!rankingUnlocked.value && reliability.value >= 1) {
+    // Unlock once the full round robin is done: every pair judged exactly once.
+    if (!rankingUnlocked.value && matchCount.value >= TOTAL_DUELS) {
       rankingUnlocked.value = true;
       opts.onUnlock?.();
     }
@@ -129,8 +117,6 @@ export function useMotivatorGame(opts: UseMotivatorGameOptions) {
     if (p.mode === 'manager' || p.mode === 'solo') mode.value = p.mode;
     matchCount.value = p.matchCount ?? 0;
     playedPairs.value = new Set(Array.isArray(p.playedPairs) ? p.playedPairs : []);
-    stableStreak.value = p.stableStreak ?? 0;
-    previousTopGroup = Array.isArray(p.previousTopGroup) ? p.previousTopGroup : [];
     rankingUnlocked.value = !!p.rankingUnlocked;
     matchHistory.value = Array.isArray(p.history) ? p.history : [];
     started.value = true;
@@ -148,8 +134,6 @@ export function useMotivatorGame(opts: UseMotivatorGameOptions) {
     playedPairs.value = new Set();
     matchHistory.value = [];
     matchCount.value = 0;
-    stableStreak.value = 0;
-    previousTopGroup = [];
     rankingUnlocked.value = false;
     playerName.value = '';
     mode.value = opts.defaultMode;
@@ -172,7 +156,7 @@ export function useMotivatorGame(opts: UseMotivatorGameOptions) {
     matchCount,
     rankingUnlocked,
     rankedItems,
-    reliabilityPercent,
+    progressPercent,
     startGame,
     chooseFavorite,
     settleDuel,

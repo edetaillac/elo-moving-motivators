@@ -14,8 +14,6 @@ export interface SaveData {
   elos: Record<number, number>;
   shown: Record<number, number>;
   playedPairs: string[];
-  stableStreak: number;
-  previousTopGroup: number[];
   rankingUnlocked: boolean;
   history: { winnerId: number; loserId: number }[];
 }
