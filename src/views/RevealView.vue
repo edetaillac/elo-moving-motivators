@@ -58,12 +58,21 @@ const reset = () => {
 
 <template>
   <div class="reveal-view">
-    <ResultsReveal
-      v-if="revealItems"
-      :items="revealItems"
-      :name="revealName"
-      @close="reset"
-    />
+    <header class="reveal-topbar">
+      <router-link to="/" class="reveal-home" :aria-label="t('revealPage.home')">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+        <span class="reveal-home-label">{{ t('revealPage.home') }}</span>
+      </router-link>
+      <div class="wordmark">Moving Motivators</div>
+    </header>
+
+    <div class="reveal-content">
+      <ResultsReveal
+        v-if="revealItems"
+        :items="revealItems"
+        :name="revealName"
+        @close="reset"
+      />
 
     <div v-else class="uploader">
       <div class="uploader-icon" aria-hidden="true">
@@ -100,6 +109,8 @@ const reset = () => {
       <input ref="fileRef" type="file" accept=".txt,text/plain" hidden @change="onFile">
     </div>
 
+    </div>
+
     <!-- Language switch on the landing only, so it's there for whoever opens the
          reveal, but out of the way during the animated reveal itself. -->
     <LangSwitch v-if="!revealItems" />
@@ -109,12 +120,59 @@ const reset = () => {
 <style scoped>
 .reveal-view {
   min-height: 100vh;
-  padding: 48px 24px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   /* Warm gold halo from the top, matching the accueil and the reveal ceremony. */
   background: radial-gradient(ellipse 70% 45% at 50% 0%, rgba(214, 163, 44, 0.1), transparent 70%), var(--c-bg);
+}
+
+/* Top bar: back-to-home link + wordmark, both left-aligned so the top-right stays
+   free for the language switch (which sits there on mobile). */
+.reveal-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 32px;
+}
+
+.wordmark {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+}
+
+/* Ghost pill, same language as the duel/reveal ghost buttons. */
+.reveal-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--c-border-soft);
+  background: var(--c-glass);
+  color: var(--c-ink-2);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.reveal-home:hover {
+  color: var(--c-brand);
+  border-color: color-mix(in srgb, var(--c-brand) 40%, transparent);
+}
+
+.reveal-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 24px 48px;
 }
 
 .uploader {
@@ -256,8 +314,21 @@ const reset = () => {
 
 /* Mobile only. */
 @media (max-width: 480px) {
-  .reveal-view {
-    padding: 24px 16px;
+  .reveal-topbar {
+    padding: 16px 18px;
+  }
+
+  /* Icon-only back button so the left group clears the top-right language switch. */
+  .reveal-home {
+    padding: 9px 11px;
+  }
+
+  .reveal-home-label {
+    display: none;
+  }
+
+  .reveal-content {
+    padding: 16px 16px 40px;
   }
 
   .uploader {

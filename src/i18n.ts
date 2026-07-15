@@ -79,6 +79,7 @@ const messages: Record<Locale, Dict> = {
     'revealPage.start': 'Lancer la révélation',
     'revealPage.import': 'Importer un fichier',
     'revealPage.fileLoaded': 'Fichier chargé : {name}',
+    'revealPage.home': 'Accueil',
   },
   en: {
     'header.subtitle.onboarding': 'Discover what really drives you, across 10 motivators.',
@@ -138,6 +139,7 @@ const messages: Record<Locale, Dict> = {
     'revealPage.start': 'Start the reveal',
     'revealPage.import': 'Import a file',
     'revealPage.fileLoaded': 'File loaded: {name}',
+    'revealPage.home': 'Home',
   },
 };
 
