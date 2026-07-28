@@ -22,7 +22,7 @@ const start = () => {
 };
 
 // A fanned deck of five motivator cards, dealt in and gently floating.
-const DECK_IDS = [4, 2, 6, 5, 10]; // Statut, Curiosité, Honneur, Objectif, Relations
+const DECK_IDS = [4, 2, 6, 5, 10]; // Statut, Curiosité, Valeurs, Sens, Interactions
 const deck = DECK_IDS.map((id, i) => {
   const m = MOTIVATORS.find((x) => x.id === id) as (typeof MOTIVATORS)[number];
   const off = i - (DECK_IDS.length - 1) / 2;
