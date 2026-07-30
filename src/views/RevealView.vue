@@ -3,7 +3,6 @@ import { computed, ref } from 'vue';
 import { Motivator } from '@/store';
 import { decodeResults } from '@/results';
 import ResultsReveal from '@/components/ResultsReveal.vue';
-import LangSwitch from '@/components/LangSwitch.vue';
 import { t } from '@/i18n';
 
 const codeInput = ref('');
@@ -113,10 +112,6 @@ const reset = () => {
     </div>
 
     </div>
-
-    <!-- Language switch on the landing only, so it's there for whoever opens the
-         reveal, but out of the way during the animated reveal itself. -->
-    <LangSwitch v-if="!revealItems" />
   </div>
 </template>
 
@@ -129,8 +124,7 @@ const reset = () => {
   background: radial-gradient(ellipse 70% 45% at 50% 0%, rgba(214, 163, 44, 0.1), transparent 70%), var(--c-bg);
 }
 
-/* Top bar: back-to-home link + wordmark, both left-aligned so the top-right stays
-   free for the language switch (which sits there on mobile). */
+/* Top bar: back-to-home link + wordmark, both left-aligned. */
 .reveal-topbar {
   flex-shrink: 0;
   display: flex;
@@ -327,17 +321,10 @@ const reset = () => {
     padding: 16px 18px;
   }
 
-  /* Icon-only back button so the left group clears the top-right language switch. */
-  .reveal-home {
-    padding: 9px 11px;
-  }
-
-  .reveal-home-label {
-    display: none;
-  }
-
+  /* Extra bottom room so the card's full-width buttons never end up under the
+     language switch pinned bottom-right. */
   .reveal-content {
-    padding: 16px 16px 40px;
+    padding: 16px 16px 76px;
   }
 
   .uploader {

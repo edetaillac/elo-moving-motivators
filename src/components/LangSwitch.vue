@@ -1,12 +1,18 @@
 <script setup lang="ts">
-// Discreet FR/EN switch, fixed bottom-right, present on the entry screens so the
-// language can be changed before playing. Text segmented pill (no flag emoji),
-// matching the mode toggle.
+// Discreet FR/EN switch, rendered once in App.vue so it's on every screen
+// (accueil, duels, export, page de révélation): the wording can be flipped at
+// any moment, mid-game included. Text segmented pill (no flag emoji), matching
+// the mode toggle.
+// Two placements: floating (default) pins it bottom-right over the page;
+// `docked` drops it into the flow, for the ranking reveal where a pinned pill
+// would sit over the ceremony.
 import { locale, setLocale } from '@/i18n';
+
+defineProps<{ docked?: boolean }>();
 </script>
 
 <template>
-  <div class="lang-switch" role="group" aria-label="Language">
+  <div class="lang-switch" :class="{ 'lang-switch--docked': docked }" role="group" aria-label="Language">
     <button
       type="button"
       class="lang-opt"
@@ -42,6 +48,14 @@ import { locale, setLocale } from '@/i18n';
   box-shadow: 0 6px 16px rgba(30, 25, 20, 0.08);
 }
 
+/* Docked: same pill, but in the flow at the end of the content and pushed to
+   the right edge — it scrolls away with the page instead of hovering over it. */
+.lang-switch--docked {
+  position: static;
+  margin-left: auto;
+  width: fit-content;
+}
+
 .lang-opt {
   border: none;
   background: none;
@@ -71,14 +85,21 @@ import { locale, setLocale } from '@/i18n';
   outline-offset: 2px;
 }
 
-/* Mobile: move to the top-right corner. Bottom-right would overlap the entry
-   CTAs ("C'est parti", "Importer un fichier") that go full-width at the bottom
-   of the card on small screens. */
+/* Mobile: stays bottom-right, but compact. It now sits on every screen, so it
+   has to share the bottom edge with the full-width entry CTAs and the reveal's
+   centered "Révéler" button — the screens concerned reserve the clearance, and
+   the smaller footprint keeps it clear of the centered button. */
 @media (max-width: 480px) {
   .lang-switch {
-    top: 14px;
-    right: 14px;
-    bottom: auto;
+    bottom: 12px;
+    right: 12px;
+    padding: 3px;
+  }
+
+  .lang-opt {
+    min-width: 30px;
+    padding: 5px 9px;
+    font-size: 11.5px;
   }
 }
 </style>
