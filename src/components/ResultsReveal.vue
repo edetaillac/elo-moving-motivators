@@ -2,6 +2,8 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { Motivator } from '@/store';
 import { iconUrl } from '@/icons';
+import LangSwitch from '@/components/LangSwitch.vue';
+import { revealOpen } from '@/ui';
 import { t, placeLabel, mName, mDesc } from '@/i18n';
 
 const props = withDefaults(defineProps<{ items: Motivator[]; name?: string; showClose?: boolean }>(), {
@@ -69,8 +71,13 @@ const onKey = (e: KeyboardEvent) => {
 onMounted(() => {
   window.addEventListener('keydown', onKey);
   headingRef.value?.focus();
+  // Tell App.vue to drop its floating switch: this screen docks its own.
+  revealOpen.value = true;
 });
-onUnmounted(() => window.removeEventListener('keydown', onKey));
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKey);
+  revealOpen.value = false;
+});
 </script>
 
 <template>
@@ -135,6 +142,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
             </div>
           </li>
         </ol>
+
+        <!-- Language switch docked at the end of the ranking rather than pinned
+             to the viewport: on this screen a floating pill would sit over the
+             podium and the reveal button. Same 640px column as the rows, so it
+             closes the list on its right edge. -->
+        <div class="reveal-lang">
+          <LangSwitch docked />
+        </div>
     </div>
 
     <!-- Floating reveal button -->
@@ -522,6 +537,15 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   font-size: 13.5px;
   line-height: 1.45;
   color: var(--c-ink-2);
+}
+
+/* Docked language switch, closing the ranking. Sits inside the block's bottom
+   padding, which already clears the fixed reveal button. */
+.reveal-lang {
+  max-width: 640px;
+  margin: 28px auto 0;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* Floating reveal button, fixed to the viewport bottom center. */

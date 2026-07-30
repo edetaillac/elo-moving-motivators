@@ -208,5 +208,11 @@ const downloadCode = () => {
     width: 100%;
     justify-content: center;
   }
+
+  /* Clearance for the language switch pinned bottom-right: the actions go
+     full-width here and would otherwise sit under it. */
+  .export {
+    margin-bottom: 56px;
+  }
 }
 </style>

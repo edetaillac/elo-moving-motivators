@@ -309,5 +309,11 @@ const deck = DECK_IDS.map((id, i) => {
     justify-content: center;
     width: 100%;
   }
+
+  /* Clearance for the language switch pinned bottom-right: the CTA goes
+     full-width here and would otherwise sit under it. */
+  .accueil {
+    padding-bottom: 56px;
+  }
 }
 </style>

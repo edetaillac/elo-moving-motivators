@@ -2,12 +2,17 @@
 // Thin shell: routing lives in router/index.ts.
 // - /        → GameView (play the duels, export a code)
 // - /reveal  → RevealView (manager loads a code and reveals the ranking)
-// The language switch is rendered per-view (onboarding + reveal landing only),
-// so it doesn't sit over the duel and the results.
+// The language switch lives here, above the router view: one instance for the
+// whole app, so FR/EN can be flipped on any screen (duel, export, révélation)
+// and not only before starting. Exception: the ranking reveal renders its own,
+// docked at the end of its content, so nothing floats over the ceremony.
+import LangSwitch from '@/components/LangSwitch.vue';
+import { revealOpen } from '@/ui';
 </script>
 
 <template>
   <router-view />
+  <LangSwitch v-if="!revealOpen" />
 </template>
 
 <style>
